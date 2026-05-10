@@ -2,7 +2,11 @@
 # check=error=true
 
 ARG RUBY_VERSION=4.0.2
-ARG CADDY_VERSION=2.8.4
+# CADDY_VERSION must be passed in via --build-arg. The canonical value lives
+# in .caddy-version at the repo root; bin/build reads it. No default here on
+# purpose so a manual `docker build` without the arg fails loud rather than
+# silently using stale software.
+ARG CADDY_VERSION
 
 # Caddy with caddy-dns/cloudflare baked in (DNS-01 for ACME).
 # Passing v${CADDY_VERSION} explicitly to xcaddy pins the build — without it,

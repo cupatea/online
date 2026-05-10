@@ -151,20 +151,29 @@ The volume survives upgrades, so settings, services, the auto-generated
 
 ## Releasing a new image
 
-Builds happen locally — no CI. To cut a release:
+Builds happen locally — no CI. Two pinned-version files at the repo root:
+
+- `VERSION` — this app's version (`vMAJOR.MINOR.PATCH`). Auto-bumped on
+  `--publish` (PATCH+1) and committed as `vX.Y.Z`.
+- `.caddy-version` — the Caddy version baked into the image. Edit by hand
+  when you want to upgrade.
 
 ```bash
 # One-time auth (token needs the write:packages scope)
 gh auth token | docker login ghcr.io -u cupatea --password-stdin
 
-# Build amd64 (NAS arch) and push
-script/release             # tags :latest
-script/release v0.1.0      # also tags :v0.1.0
+# Local test build (native arch, no commit, no push)
+bin/build
+
+# Bump VERSION, commit, build linux/amd64, push :latest + :vX.Y.Z to GHCR
+bin/build --publish
 ```
 
-The script runs `docker buildx build --platform linux/amd64 --push`. Set
+The publish path tags both `:latest` and the new `:vX.Y.Z` from VERSION. Set
 `PLATFORMS=linux/amd64,linux/arm64` if you also need arm64 (slow on x86
 hosts — uses QEMU emulation).
+
+To bump Caddy: edit `.caddy-version`, commit, then `bin/build --publish`.
 
 ## How the admin pushes config
 

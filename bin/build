@@ -17,6 +17,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 IMAGE="ghcr.io/cupatea/online"
+CADDY_VERSION="$(cat .caddy-version)"
 PUBLISH=0
 
 for arg in "$@"; do
@@ -28,7 +29,10 @@ for arg in "$@"; do
 done
 
 if [[ $PUBLISH -eq 0 ]]; then
-  exec docker build --tag "$IMAGE:latest" .
+  exec docker build \
+    --build-arg "CADDY_VERSION=$CADDY_VERSION" \
+    --tag "$IMAGE:latest" \
+    .
 fi
 
 # ── --publish from here ─────────────────────────────────────────────
@@ -59,6 +63,7 @@ PLATFORMS="${PLATFORMS:-linux/amd64}"
 
 exec docker buildx build \
   --platform "$PLATFORMS" \
+  --build-arg "CADDY_VERSION=$CADDY_VERSION" \
   --tag "$IMAGE:latest" \
   --tag "$IMAGE:$CURRENT_VERSION" \
   --push \
