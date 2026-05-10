@@ -45,14 +45,27 @@ public internet. Nothing inbound to the host.
 
 ## Prerequisites
 
-- Docker + the Compose plugin on the host.
+- Docker on the host.
 - Your domain's DNS hosted on **Cloudflare** (any registrar — the nameservers
   just need to point at Cloudflare's).
-- For each subdomain you'll expose: a CNAME (or A record) in Cloudflare
-  pointing to your host's private name (e.g. `nas.<tailnet>.ts.net` for
-  Tailscale, or your LAN IP/hostname).
-- A Cloudflare API token with **Zone → DNS → Edit** scoped to your zone.
-  Create it at <https://dash.cloudflare.com/profile/api-tokens>.
+- A wildcard A record in Cloudflare for your zone, pointing at the host's
+  reachable IP (proxy off / DNS only):
+
+  | Type | Name | Content | Proxy |
+  |------|------|---------|-------|
+  | `A`  | `*`  | `<your-host-IP>` | DNS only (gray cloud) |
+
+  For a Tailscale-only host: use the host's Tailscale CGNAT IP (`tailscale ip`
+  on the host — something like `100.x.y.z`). For a LAN-only host: use its LAN
+  IP. **Don't** point to a Tailscale name like `nas.<tailnet>.ts.net` —
+  public DNS resolvers can't follow the chain into Tailscale's namespace
+  (split-horizon hits NXDOMAIN).
+- A Cloudflare API token created from the **"Edit zone DNS"** template
+  (<https://dash.cloudflare.com/profile/api-tokens>). The template grants
+  both permissions DNS-01 needs: `Zone → Zone → Read` (to look up the zone
+  ID) **and** `Zone → DNS → Edit` (to write the `_acme-challenge` TXT). A
+  hand-rolled token with only `DNS:Edit` will fail with "expected 1 zone,
+  got 0".
 
 ## Run it
 
@@ -106,7 +119,7 @@ The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003`, so
 most NAS container UIs auto-detect them. In those UIs:
 
 - Pull `ghcr.io/cupatea/online:latest`
-- Network mode: **host**
+- Map ports: `80 → 80`, `443 → 443`, `3003 → 3003`
 - Mount a named volume to `/rails/storage`
 - Start
 
@@ -210,12 +223,19 @@ boundary as the SQLite DB it came from.
 
 - **Port 80/443 already in use.** Some NAS web UIs bind these by default.
   Move the admin UI off them **before** running `docker compose up`. Confirm
-  with `sudo ss -ltnp | grep -E ':(80|443)\b'`.
+  with `sudo ss -ltnp | grep -E ':(80|443)\b'` on Linux, or
+  `sudo lsof -nP -iTCP:80,443 -sTCP:LISTEN` on macOS.
 - **Port 3003 already in use.** Pick a different port: change `PORT: "3003"`
   in the compose file. The admin app listens on whatever `PORT` is set to.
 - **`tls: failed to obtain certificate` / DNS-01 errors.** The token is
-  almost always the cause. Re-check it has `Zone:DNS:Edit` scoped to the
-  right zone. Test it with:
+  almost always the cause. Look at `docker logs online | grep cupatea` for
+  the actual error:
+  - `expected 1 zone, got 0` → token is missing `Zone:Zone:Read`. Recreate
+    using the "Edit zone DNS" template.
+  - `403 Forbidden` → token doesn't have `Zone:DNS:Edit` for the zone, or
+    the wrong zone is selected.
+
+  Test the token directly:
   ```bash
   curl -H "Authorization: Bearer $YOUR_TOKEN" \
        https://api.cloudflare.com/client/v4/user/tokens/verify
@@ -230,8 +250,14 @@ boundary as the SQLite DB it came from.
   certs per registered domain per week. If you're iterating, stop and let
   Caddy back off — it auto-retries with exponential backoff.
 - **Hostname doesn't resolve from your laptop.** You're not on the network
-  the host is on, or your DNS isn't reaching the right place. On Tailscale,
-  check `tailscale status` and that MagicDNS is enabled on your client.
+  the host is on, or your DNS isn't reaching the right place.
+  - Skip DNS to isolate: `curl -vk --resolve <host>:443:<your-host-IP> https://<host>`
+  - Confirm Cloudflare side: `dig +short @1.1.1.1 <host>` should return
+    your host IP. If it returns blank, the wildcard A record isn't live.
+  - On Tailscale, MagicDNS may be caching an earlier NXDOMAIN response.
+    Wait the SOA negative-cache TTL (default 1800s) or toggle MagicDNS off
+    and back on at <https://login.tailscale.com/admin/dns> to force a
+    re-fetch.
 - **I want to nuke and start over.** `docker compose down -v` removes
   `online_data` (cert data + admin SQLite + auto-generated secret). You'll
   re-issue certs from scratch on the next boot.
