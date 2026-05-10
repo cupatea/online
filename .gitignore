@@ -1,0 +1,12 @@
+# Secrets — must never be committed
+.env
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors
+*.swp
+*.swo
+.idea/
+.vscode/

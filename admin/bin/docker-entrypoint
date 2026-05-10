@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+# Auto-provision SECRET_KEY_BASE so users don't have to pass an .env file.
+# Persists across container restarts in the /rails/storage volume — the same
+# place SQLite lives — so session cookies survive image upgrades.
+KEY_FILE=/rails/storage/.secret_key_base
+if [ -z "${SECRET_KEY_BASE:-}" ]; then
+  if [ ! -s "$KEY_FILE" ]; then
+    mkdir -p "$(dirname "$KEY_FILE")"
+    ruby -rsecurerandom -e 'puts SecureRandom.hex(64)' > "$KEY_FILE"
+  fi
+  export SECRET_KEY_BASE="$(cat "$KEY_FILE")"
+fi
+
+# If running the rails server then create or migrate existing database
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:prepare
+fi
+
+exec "${@}"

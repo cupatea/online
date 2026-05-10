@@ -1,0 +1,40 @@
+<% content_for :title, "Settings" %>
+
+<h1 class="mb-6 text-xl font-semibold tracking-tight">Settings</h1>
+
+<%= form_with model: @setting, url: setting_path, method: :patch, class: "space-y-4" do |f| %>
+  <% if @setting.errors.any? %>
+    <div class="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+      <ul class="list-disc pl-5">
+        <% @setting.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :acme_email, "Let's Encrypt email", class: "block text-sm font-medium text-stone-700" %>
+    <%= f.email_field :acme_email,
+                      class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
+    <p class="mt-1 text-xs text-stone-500">Used for the ACME account &amp; cert-expiry warnings. Real inbox.</p>
+  </div>
+
+  <div>
+    <%= f.label :cloudflare_token, "Cloudflare API token", class: "block text-sm font-medium text-stone-700" %>
+    <%= f.text_field :cloudflare_token,
+                     class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm font-mono shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
+    <p class="mt-1 text-xs text-stone-500">
+      Permissions: <span class="font-mono">Zone → DNS → Edit</span>, scoped to your zone.
+      Create one at <a href="https://dash.cloudflare.com/profile/api-tokens" class="underline" target="_blank" rel="noopener">dash.cloudflare.com</a>.
+    </p>
+  </div>
+
+  <div class="pt-2">
+    <%= f.submit "Save settings", class: "rounded bg-stone-900 px-4 py-2 text-sm text-white hover:bg-stone-700" %>
+  </div>
+<% end %>
+
+<div class="mt-10 border-t border-stone-200 pt-6 text-xs text-stone-500">
+  <p>Settings are stored in the admin app's SQLite database. The token is sent to Caddy's admin API in plain text on save (and on each app boot).</p>
+</div>

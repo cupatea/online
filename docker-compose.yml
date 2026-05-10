@@ -1,0 +1,44 @@
+# Pull-and-run reverse proxy. No .env, no config files — first boot generates
+# everything it needs and persists state in named volumes.
+#
+# Quickstart on the host:
+#   curl -O https://raw.githubusercontent.com/cupatea/nas/main/docker-compose.yml
+#   docker compose up -d
+#
+# Then open  http://<your-host>:3003  on the same network.
+
+services:
+  caddy:
+    image: ghcr.io/cupatea/nas-caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    # Host networking so Caddy can bind 80/443 directly and reach services
+    # running on the host as `localhost:<port>`.
+    network_mode: host
+    volumes:
+      - caddy_data:/data       # issued certs + ACME account; back this up
+      - caddy_config:/config
+
+  admin:
+    image: ghcr.io/cupatea/nas-admin:latest
+    container_name: nas-admin
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - caddy
+    environment:
+      RAILS_ENV: production
+      PORT: "3003"
+      CADDY_ADMIN_URL: "http://localhost:2019"
+      RAILS_LOG_TO_STDOUT: "1"
+      RAILS_SERVE_STATIC_FILES: "1"
+      # SECRET_KEY_BASE is auto-generated on first boot and persisted to the
+      # admin_data volume by bin/docker-entrypoint. Set it here only if you
+      # want to override (e.g. share sessions across deployments).
+    volumes:
+      - admin_data:/rails/storage   # SQLite DB + auto-generated secret
+
+volumes:
+  caddy_data:
+  caddy_config:
+  admin_data:

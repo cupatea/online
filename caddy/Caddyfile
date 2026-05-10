@@ -1,0 +1,10 @@
+# Bootstrap Caddyfile baked into the image. Just enables the admin API on
+# localhost:2019 — no sites yet. The admin app pushes the real config to this
+# endpoint at boot and on every save (via POST /load).
+#
+# When admin is offline (or DB is empty) Caddy stays idle except for :2019.
+# That's intentional — no half-configured state, no stale sites.
+
+{
+    admin localhost:2019
+}
