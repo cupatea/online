@@ -22,7 +22,11 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+    LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
+    PORT="3003" \
+    RAILS_LOG_TO_STDOUT="1" \
+    RAILS_SERVE_STATIC_FILES="1" \
+    CADDY_ADMIN_URL="http://localhost:2019"
 
 FROM base AS build
 
@@ -65,5 +69,9 @@ LABEL org.opencontainers.image.description="Caddy + a Rails admin UI in one imag
 LABEL org.opencontainers.image.licenses="MIT"
 
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+# 80/443 are Caddy's public ports; 3003 is the admin UI; 2019 is Caddy's
+# admin API (loopback-only — listed for completeness, not for binding).
 EXPOSE 80 443 3003
+# Single state volume — NAS GUIs auto-detect this and pre-fill a mount for it.
+VOLUME ["/rails/storage"]
 CMD ["./bin/thrust", "./bin/rails", "server"]

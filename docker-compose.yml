@@ -1,27 +1,10 @@
-# One image, one container, one volume. Pull and run — no .env, no clone.
-#
-#   curl -O https://raw.githubusercontent.com/cupatea/online/main/docker-compose.yml
-#   docker compose up -d
-#
-# Then open  http://<host>:3003
-
 services:
   app:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
-    # Caddy needs to bind 80/443 and reach upstreams as `localhost:<port>`.
     network_mode: host
-    environment:
-      RAILS_ENV: production
-      PORT: "3003"
-      RAILS_LOG_TO_STDOUT: "1"
-      RAILS_SERVE_STATIC_FILES: "1"
-      # Caddy admin API stays on the loopback inside the same container.
-      CADDY_ADMIN_URL: "http://localhost:2019"
     volumes:
-      # Single volume holds: SQLite DB, auto-generated SECRET_KEY_BASE,
-      # issued certs, and the ACME account. Back this up.
       - online_data:/rails/storage
 
 volumes:

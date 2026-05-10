@@ -56,6 +56,22 @@ public internet. Nothing inbound to the host.
 
 ## Run it
 
+The image bakes in every sensible default — you only need to provide a
+volume and host networking. Pick whichever you like.
+
+### Plain `docker run`
+
+```bash
+docker run -d \
+  --name online \
+  --restart unless-stopped \
+  --network host \
+  -v online_data:/rails/storage \
+  ghcr.io/cupatea/online:latest
+```
+
+### Compose
+
 Save this as `docker-compose.yml`:
 
 ```yaml
@@ -65,12 +81,6 @@ services:
     container_name: online
     restart: unless-stopped
     network_mode: host
-    environment:
-      RAILS_ENV: production
-      PORT: "3003"
-      RAILS_LOG_TO_STDOUT: "1"
-      RAILS_SERVE_STATIC_FILES: "1"
-      CADDY_ADMIN_URL: "http://localhost:2019"
     volumes:
       - online_data:/rails/storage
 
@@ -78,21 +88,23 @@ volumes:
   online_data:
 ```
 
-Or fetch it from the repo:
+Or fetch it: `curl -O https://raw.githubusercontent.com/cupatea/online/main/docker-compose.yml`
 
-```bash
-curl -O https://raw.githubusercontent.com/cupatea/online/main/docker-compose.yml
-```
+Then `docker compose up -d`.
 
-Then:
+### NAS web UIs (Synology, UGOS, Portainer, etc.)
 
-```bash
-docker compose up -d
-```
+The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003`, so
+most NAS container UIs auto-detect them. In those UIs:
 
-That's the whole install. No `.env`, no clone, no build. The container
-generates its own `SECRET_KEY_BASE` on first boot and persists it in
-`online_data` along with the SQLite DB and Caddy's cert state.
+- Pull `ghcr.io/cupatea/online:latest`
+- Network mode: **host**
+- Mount a named volume to `/rails/storage`
+- Start
+
+That's it. The container creates its SQLite DB on first boot, runs all
+migrations, generates a `SECRET_KEY_BASE` and stores it in the volume.
+Subsequent boots reuse what's there.
 
 ## Configure it
 
