@@ -1,8 +1,7 @@
 #!/bin/bash -e
 
 # Auto-provision SECRET_KEY_BASE so users don't have to pass an .env file.
-# Persists across container restarts in the /rails/storage volume — the same
-# place SQLite lives — so session cookies survive image upgrades.
+# Persists in the storage volume — survives image upgrades.
 KEY_FILE=/rails/storage/.secret_key_base
 if [ -z "${SECRET_KEY_BASE:-}" ]; then
   if [ ! -s "$KEY_FILE" ]; then
@@ -12,9 +11,32 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
   export SECRET_KEY_BASE="$(cat "$KEY_FILE")"
 fi
 
-# If running the rails server then create or migrate existing database
+# Caddy puts its data and config dumps under $XDG_*_HOME/caddy. Pointing both
+# at /rails/storage means a single named volume holds everything: SQLite,
+# secret, certs, ACME account.
+export XDG_DATA_HOME=/rails/storage
+export XDG_CONFIG_HOME=/rails/storage
+
+# Initialize/migrate the DB before booting the server.
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
 fi
 
-exec "${@}"
+# Start Caddy in the background. The bootstrap Caddyfile only enables the
+# admin API on :2019; Rails publishes the real config there once it boots.
+caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
+CADDY_PID=$!
+
+# Forward TERM/INT to both children. If either exits, take everything down —
+# `restart: unless-stopped` in compose brings the container back cleanly.
+trap 'kill -TERM "$CADDY_PID" "$RAILS_PID" 2>/dev/null || true' TERM INT
+
+"$@" &
+RAILS_PID=$!
+
+set +e
+wait -n
+EXIT=$?
+kill -TERM "$CADDY_PID" "$RAILS_PID" 2>/dev/null
+wait
+exit $EXIT

@@ -1,16 +1,15 @@
-# nas reverse proxy
+# online
 
-Caddy reverse proxy with a tiny Rails admin UI for managing it. Two prebuilt
-images, one compose file, no config files. Pull, start, open the UI, add your
-services. Caddy reloads itself.
+Caddy reverse proxy with a tiny Rails admin UI for managing it. One Docker
+image, one container, one volume. Pull and run.
 
-Each service you add gets:
+Each service you add through the UI gets:
 
 - A real Let's Encrypt certificate, obtained via the ACME DNS-01 challenge
   through Cloudflare (works even when the host has no public ingress).
 - A reverse proxy from `https://<your-hostname>` to `localhost:<port>` on the
   host.
-- Live reload — no container restarts, no dropped connections.
+- Live reload — no restarts, no dropped connections.
 
 ## Architecture
 
@@ -18,37 +17,37 @@ Each service you add gets:
                    ┌──────────────────────────────────────┐
                    │ private network (e.g. tailnet, LAN)  │
                    │                                      │
-   you ─tailnet─►  │   ┌────────────────────┐             │
-                   │   │ admin (Rails, :3003)│            │
-                   │   │  - SQLite           │            │
-                   │   │  - Settings + CRUD  │            │
-                   │   └────────┬───────────┘             │
-                   │            │ POST /load              │
-                   │            ▼ (text/caddyfile)        │
-                   │   ┌────────────────────┐             │
-                   │   │ caddy              │             │
-                   │   │  - admin :2019     │             │
-   user ─HTTPS──►  │   │  - serves :80/:443 │ ─►  localhost:<port>
-                   │   └────────┬───────────┘             │  (your services
-                   │            │                         │   on the host)
-                   └────────────┼─────────────────────────┘
-                                │
-   Public internet ◄─ DNS-01 ──┘
+   you ─tailnet─►  │   ┌─ container (one image) ──────┐   │
+                   │   │ Rails admin (:3003)          │   │
+                   │   │       │ in-process push      │   │
+                   │   │       ▼ (text/caddyfile      │   │
+                   │   │         to :2019/load)       │   │
+                   │   │ Caddy                        │   │
+   user ─HTTPS──►  │   │  - admin :2019 (loopback)    │   │
+                   │   │  - serves :80/:443           │ ─►  localhost:<port>
+                   │   └──────────┬───────────────────┘   │  (services on host)
+                   │              │                       │
+                   └──────────────┼───────────────────────┘
+                                  │
+   Public internet ◄──── DNS-01 ──┘
    (Cloudflare API + Let's Encrypt validation lookups only —
     the host is never reached from outside the private network)
 ```
 
-The host typically isn't publicly reachable (Tailscale tailnet, LAN, etc.).
-That makes HTTP-01 (where Let's Encrypt hits port 80 from the public
-internet) impossible, so we use DNS-01 instead: Caddy proves domain ownership
-by writing a TXT record into Cloudflare DNS, which Let's Encrypt then reads
-over the public internet. The host is never contacted from outside.
+Both processes (Caddy + Rails) run inside the single container. The entrypoint
+spawns Caddy in the background, then runs Rails. Rails publishes Caddyfile
+updates over loopback to Caddy's admin API on port 2019.
+
+DNS-01 is required because the host typically isn't publicly reachable
+(Tailscale tailnet, LAN, etc.). Caddy proves domain ownership by writing a
+TXT record into Cloudflare DNS, which Let's Encrypt then reads from the
+public internet. Nothing inbound to the host.
 
 ## Prerequisites
 
 - Docker + the Compose plugin on the host.
-- Your domain's DNS hosted on **Cloudflare** (any registrar is fine — the
-  nameservers just need to point at Cloudflare's).
+- Your domain's DNS hosted on **Cloudflare** (any registrar — the nameservers
+  just need to point at Cloudflare's).
 - For each subdomain you'll expose: a CNAME (or A record) in Cloudflare
   pointing to your host's private name (e.g. `nas.<tailnet>.ts.net` for
   Tailscale, or your LAN IP/hostname).
@@ -61,40 +60,28 @@ Save this as `docker-compose.yml`:
 
 ```yaml
 services:
-  caddy:
-    image: ghcr.io/cupatea/nas-caddy:latest
-    container_name: caddy
+  app:
+    image: ghcr.io/cupatea/online:latest
+    container_name: online
     restart: unless-stopped
     network_mode: host
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-
-  admin:
-    image: ghcr.io/cupatea/nas-admin:latest
-    container_name: nas-admin
-    restart: unless-stopped
-    network_mode: host
-    depends_on: [caddy]
     environment:
       RAILS_ENV: production
       PORT: "3003"
-      CADDY_ADMIN_URL: "http://localhost:2019"
       RAILS_LOG_TO_STDOUT: "1"
       RAILS_SERVE_STATIC_FILES: "1"
+      CADDY_ADMIN_URL: "http://localhost:2019"
     volumes:
-      - admin_data:/rails/storage
+      - online_data:/rails/storage
 
 volumes:
-  caddy_data:
-  caddy_config:
-  admin_data:
+  online_data:
 ```
 
-Or fetch the same file from the repo:
+Or fetch it from the repo:
 
 ```bash
-curl -O https://raw.githubusercontent.com/cupatea/nas/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/cupatea/online/main/docker-compose.yml
 ```
 
 Then:
@@ -103,9 +90,9 @@ Then:
 docker compose up -d
 ```
 
-That's the whole install. No `.env` file. No clone. No build. The admin
-container generates its own `SECRET_KEY_BASE` on first boot and persists it in
-the `admin_data` volume.
+That's the whole install. No `.env`, no clone, no build. The container
+generates its own `SECRET_KEY_BASE` on first boot and persists it in
+`online_data` along with the SQLite DB and Caddy's cert state.
 
 ## Configure it
 
@@ -121,8 +108,9 @@ on Tailscale, the host's LAN IP, etc.
 1. **Settings** → enter your ACME email and Cloudflare API token → Save.
 2. **+ Add service** → display name, hostname (e.g. `caramba.example.com`),
    upstream host (default `localhost`), upstream port → Save.
-3. The admin app pushes the new Caddyfile to Caddy. The first request to the
-   new hostname triggers cert issuance (DNS-01 takes ~30 seconds end-to-end).
+3. The admin pushes the new Caddyfile to Caddy in-process. The first request
+   to the new hostname triggers cert issuance (DNS-01 takes ~30 seconds
+   end-to-end).
 
 That's it. No Caddyfile editing. No SSH. No restarts.
 
@@ -130,10 +118,12 @@ That's it. No Caddyfile editing. No SSH. No restarts.
 
 ```bash
 docker compose ps
-docker compose logs -f caddy   # watch for "certificate obtained successfully"
-docker compose logs -f admin   # every save logs an "applied config" line
+docker compose logs -f          # Caddy + Rails interleave on stdout
 curl -v https://<your-hostname>
 ```
+
+Look for `certificate obtained successfully` after you add your first
+service.
 
 ## Updating
 
@@ -142,17 +132,17 @@ docker compose pull
 docker compose up -d
 ```
 
-Service rows + the auto-generated `SECRET_KEY_BASE` survive image upgrades
-(both live in the `admin_data` volume).
+The volume survives upgrades, so settings, services, the auto-generated
+`SECRET_KEY_BASE`, and issued certificates all carry over.
 
 ## How the admin pushes config
 
-`CaddyPublisher` (the only meaningful service object in the Rails app)
-renders a Caddyfile from the `Setting` row plus all enabled `Service` rows
-and POSTs it to `http://localhost:2019/load` with `Content-Type:
-text/caddyfile`. Caddy parses, validates, and applies the new config
-atomically. If validation fails, the running config keeps serving traffic and
-the UI surfaces the error.
+`CaddyPublisher` (in `admin/app/models/caddy_publisher.rb`) renders a
+Caddyfile from the `Setting` row plus all enabled `Service` rows and POSTs
+it to `http://localhost:2019/load` with `Content-Type: text/caddyfile`. Caddy
+parses, validates, and applies the new config atomically. If validation
+fails, the running config keeps serving traffic and the UI surfaces the
+error.
 
 Triggers:
 
@@ -162,19 +152,16 @@ Triggers:
 - The "Republish" button in the UI (manual retry).
 
 The Cloudflare token is inlined into the Caddyfile that's sent to Caddy. It
-sits in Caddy's running config and the `caddy_config` volume — the same trust
+sits in Caddy's running config and `online_data/caddy/` — the same trust
 boundary as the SQLite DB it came from.
 
 ## Troubleshooting
 
 - **Port 80/443 already in use.** Some NAS web UIs bind these by default.
-  Move the admin UI to other ports **before** running `docker compose up`.
-  Confirm with `sudo ss -ltnp | grep -E ':(80|443)\b'`.
+  Move the admin UI off them **before** running `docker compose up`. Confirm
+  with `sudo ss -ltnp | grep -E ':(80|443)\b'`.
 - **Port 3003 already in use.** Pick a different port: change `PORT: "3003"`
   in the compose file. The admin app listens on whatever `PORT` is set to.
-- **Admin UI shows "Couldn't reach Caddy at http://localhost:2019".** Caddy
-  isn't running or didn't bind the admin API. `docker compose ps`,
-  `docker compose logs caddy`. Once Caddy is up, hit "Republish" in the UI.
 - **`tls: failed to obtain certificate` / DNS-01 errors.** The token is
   almost always the cause. Re-check it has `Zone:DNS:Edit` scoped to the
   right zone. Test it with:
@@ -186,17 +173,16 @@ boundary as the SQLite DB it came from.
   click Republish.
 - **DNS not on Cloudflare yet.** The TXT records this proxy writes have to
   land on Cloudflare's authoritative nameservers, so your domain's
-  nameservers must point at Cloudflare. Until that's true, DNS-01 will fail.
-  Check with `dig +trace <hostname>` — the authoritative answer should come
-  from Cloudflare.
+  nameservers must point at Cloudflare. `dig +trace <hostname>` should show
+  Cloudflare as authoritative.
 - **Let's Encrypt rate limits.** 5 duplicate certs per week per domain, 50
   certs per registered domain per week. If you're iterating, stop and let
   Caddy back off — it auto-retries with exponential backoff.
 - **Hostname doesn't resolve from your laptop.** You're not on the network
   the host is on, or your DNS isn't reaching the right place. On Tailscale,
   check `tailscale status` and that MagicDNS is enabled on your client.
-- **I want to nuke and start over.** `docker compose down -v` removes the
-  volumes (cert data + admin SQLite + auto-generated secret). You'll
+- **I want to nuke and start over.** `docker compose down -v` removes
+  `online_data` (cert data + admin SQLite + auto-generated secret). You'll
   re-issue certs from scratch on the next boot.
 
 ## Security notes
@@ -207,6 +193,6 @@ boundary as the SQLite DB it came from.
   HTTP basic auth.
 - The Cloudflare token grants edit access to one DNS zone. Scope it tightly
   and rotate it if compromised.
-- `caddy_data` (issued certs + ACME account key) and `admin_data` (SQLite
-  with the token + the generated session secret) are sensitive. Back them
-  up; protect them like passwords.
+- `online_data` (issued certs + ACME account key + SQLite with the token +
+  the generated session secret) is sensitive. Back it up; protect it like
+  passwords.

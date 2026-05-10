@@ -1,17 +1,16 @@
-name: Build & push images
+name: Build & push image
 
 on:
   push:
     branches: [main]
     paths:
-      - caddy/**
       - admin/**
       - .github/workflows/build.yml
   workflow_dispatch: {}
 
 env:
   REGISTRY: ghcr.io
-  OWNER: ${{ github.repository_owner }}
+  IMAGE: ${{ github.repository }}   # cupatea/online → ghcr.io/cupatea/online
 
 jobs:
   build:
@@ -19,14 +18,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        # Each entry maps to one GHCR package:
-        #   ghcr.io/<owner>/nas-caddy
-        #   ghcr.io/<owner>/nas-admin
-        component:
-          - { name: caddy, context: ./caddy }
-          - { name: admin, context: ./admin }
     steps:
       - uses: actions/checkout@v4
 
@@ -43,7 +34,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/nas-${{ matrix.component.name }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
@@ -51,11 +42,10 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.component.context }}
+          context: ./admin
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Multi-arch keeps the same image usable on x86 NAS, Pi, M-series.
           platforms: linux/amd64,linux/arm64
-          cache-from: type=gha,scope=${{ matrix.component.name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.component.name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
