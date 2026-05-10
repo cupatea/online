@@ -26,6 +26,17 @@ class CaddyPublisher
     # action so the UI can surface success/failure.
     def publish!
       caddyfile = render
+
+      # Caddy's /load rejects an empty body with `EOF` from the caddyfile
+      # adapter, so skip the push entirely when there's nothing to apply
+      # (settings not yet configured). Caddy keeps its bootstrap config,
+      # which serves nothing on 80/443 — the correct state until the user
+      # finishes setup in the UI.
+      if caddyfile.strip.empty?
+        Rails.logger.info("[CaddyPublisher] settings not yet complete; skipping push")
+        return [ true, "Settings incomplete — finish setup to start serving." ]
+      end
+
       uri = URI.join(ADMIN_URL, "/load")
 
       req = Net::HTTP::Post.new(uri)

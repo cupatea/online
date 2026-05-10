@@ -79,4 +79,4 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 EXPOSE 80 443 3003
 # Single state volume — NAS GUIs auto-detect this and pre-fill a mount for it.
 VOLUME ["/rails/storage"]
-CMD ["./bin/thrust", "./bin/rails", "server"]
+CMD ["./bin/rails", "server"]
