@@ -137,7 +137,7 @@ The volume survives upgrades, so settings, services, the auto-generated
 
 ## How the admin pushes config
 
-`CaddyPublisher` (in `admin/app/models/caddy_publisher.rb`) renders a
+`CaddyPublisher` (in `app/models/caddy_publisher.rb`) renders a
 Caddyfile from the `Setting` row plus all enabled `Service` rows and POSTs
 it to `http://localhost:2019/load` with `Content-Type: text/caddyfile`. Caddy
 parses, validates, and applies the new config atomically. If validation

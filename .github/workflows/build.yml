@@ -3,9 +3,6 @@ name: Build & push image
 on:
   push:
     branches: [main]
-    paths:
-      - admin/**
-      - .github/workflows/build.yml
   workflow_dispatch: {}
 
 env:
@@ -42,7 +39,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./admin
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
