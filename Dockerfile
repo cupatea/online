@@ -1,11 +1,13 @@
 # syntax=docker/dockerfile:1
-# check=error=true
+# check=skip=InvalidDefaultArgInFrom;error=true
 
-ARG RUBY_VERSION=4.0.2
-# CADDY_VERSION must be passed in via --build-arg. The canonical value lives
-# in .caddy-version at the repo root; bin/build reads it. No default here on
-# purpose so a manual `docker build` without the arg fails loud rather than
-# silently using stale software.
+# Skip rationale: RUBY_VERSION + CADDY_VERSION are sourced from
+# .ruby-version and .caddy-version at build time (bin/build passes them via
+# --build-arg). Single source of truth — no Dockerfile defaults to drift.
+# Parser directives must be contiguous at the very top, before any plain
+# comment, hence the awkward placement above.
+
+ARG RUBY_VERSION
 ARG CADDY_VERSION
 
 # Caddy with caddy-dns/cloudflare baked in (DNS-01 for ACME).
