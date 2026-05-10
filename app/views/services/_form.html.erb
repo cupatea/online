@@ -32,6 +32,7 @@
       <%= f.number_field :upstream_port, min: 1, max: 65535, class: "mono" %>
     </div>
   </div>
+  <p class="help">Docker Desktop (macOS/Windows): use <span class="mono">host.docker.internal</span> to reach services on the host. Linux with <span class="mono">network_mode: host</span>: <span class="mono">localhost</span>.</p>
 
   <div class="checkbox">
     <%= f.check_box :enabled %>

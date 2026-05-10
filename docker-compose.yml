@@ -3,7 +3,19 @@ services:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
-    network_mode: host
+    # Explicit port mappings instead of network_mode: host so the same compose
+    # file works on Docker Desktop (macOS/Windows) where host networking lives
+    # in a hidden Linux VM and isn't reachable from the host OS.
+    #
+    # In the admin UI, set each service's "upstream host" to
+    # `host.docker.internal` (Docker Desktop's name for the host machine) so
+    # Caddy can reach services running on the host. On Linux Docker, add
+    # `extra_hosts: ["host.docker.internal:host-gateway"]` below to enable
+    # the same name there.
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3003:3003"
     volumes:
       - online_data:/rails/storage
 

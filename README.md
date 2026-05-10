@@ -65,7 +65,7 @@ volume and host networking. Pick whichever you like.
 docker run -d \
   --name online \
   --restart unless-stopped \
-  --network host \
+  -p 80:80 -p 443:443 -p 3003:3003 \
   -v online_data:/rails/storage \
   ghcr.io/cupatea/online:latest
 ```
@@ -80,13 +80,21 @@ services:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3003:3003"
     volumes:
       - online_data:/rails/storage
 
 volumes:
   online_data:
 ```
+
+> **Linux host?** You can swap the `ports:` block for `network_mode: host` for
+> a tiny perf win and to skip the per-port mapping. Don't do this on Docker
+> Desktop (macOS/Windows) — host networking there lives in a hidden Linux VM
+> and isn't reachable from the host OS.
 
 Or fetch it: `curl -O https://raw.githubusercontent.com/cupatea/online/main/docker-compose.yml`
 
@@ -119,7 +127,10 @@ on Tailscale, the host's LAN IP, etc.
 
 1. **Settings** → enter your ACME email and Cloudflare API token → Save.
 2. **+ Add service** → display name, hostname (e.g. `caramba.example.com`),
-   upstream host (default `localhost`), upstream port → Save.
+   upstream host, upstream port → Save.
+   - On Docker Desktop (macOS/Windows): use `host.docker.internal` to reach
+     services running on the host machine.
+   - On Linux host with `network_mode: host`: use `localhost`.
 3. The admin pushes the new Caddyfile to Caddy in-process. The first request
    to the new hostname triggers cert issuance (DNS-01 takes ~30 seconds
    end-to-end).
