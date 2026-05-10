@@ -1,10 +1,315 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --bg: #fafaf9;
+  --fg: #1c1917;
+  --muted: #78716c;
+  --border: #e7e5e4;
+  --card: #ffffff;
+  --accent: #1c1917;
+  --accent-hover: #44403c;
+  --danger: #b91c1c;
+  --notice-bg: #dcfce7;
+  --notice-fg: #14532d;
+  --notice-border: #86efac;
+  --alert-bg: #fee2e2;
+  --alert-fg: #7f1d1d;
+  --alert-border: #fca5a5;
+  --warn-bg: #fef3c7;
+  --warn-fg: #78350f;
+  --warn-border: #fcd34d;
+  --on-bg: #dcfce7;
+  --on-fg: #14532d;
+  --off-bg: #f5f5f4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a { color: inherit; }
+
+header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+header > div {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+nav a:hover { color: var(--fg); }
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.5rem;
+}
+
+.flash {
+  border: 1px solid;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.flash.notice {
+  background: var(--notice-bg);
+  color: var(--notice-fg);
+  border-color: var(--notice-border);
+}
+
+.flash.alert {
+  background: var(--alert-bg);
+  color: var(--alert-fg);
+  border-color: var(--alert-border);
+}
+
+.warn {
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border: 1px solid var(--warn-border);
+  border-radius: 0.25rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.warn p { margin: 0; }
+.warn p + p { margin-top: 0.25rem; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.button, button[type="submit"], input[type="submit"] {
+  display: inline-block;
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  cursor: pointer;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  background: var(--accent);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.button:hover, button[type="submit"]:hover, input[type="submit"]:hover {
+  background: var(--accent-hover);
+}
+
+.button.secondary {
+  background: var(--card);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.button.secondary:hover { background: var(--bg); }
+
+.button.link {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  padding: 0.25rem 0;
+}
+
+.button.link:hover {
+  background: transparent;
+  color: var(--fg);
+}
+
+.button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: none;
+  padding: 0.25rem 0;
+  margin-left: 0.75rem;
+}
+
+.button.danger:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+
+form.button_to { display: inline; margin: 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 0.5rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  vertical-align: top;
+}
+
+th {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+tbody tr + tr td { border-top: 1px solid #f5f5f4; }
+
+td .name { font-weight: 500; }
+td .sub { color: var(--muted); font-size: 0.75rem; }
+td.right { text-align: right; }
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+}
+
+.tag.on { background: var(--on-bg); color: var(--on-fg); }
+.tag.off { background: var(--off-bg); color: var(--muted); }
+
+.empty {
+  border: 1px dashed var(--border);
+  background: var(--card);
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+  border-radius: 0.25rem;
+}
+
+.empty p { margin: 0; }
+.empty p + p { margin-top: 0.5rem; }
+
+form.stack > * + * { margin-top: 1rem; }
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--card);
+}
+
+input[type="text"].mono,
+input[type="email"].mono,
+input[type="number"].mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+input:focus {
+  outline: none;
+  border-color: var(--muted);
+  box-shadow: 0 0 0 1px var(--muted);
+}
+
+.help {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+}
+
+.errors {
+  background: var(--alert-bg);
+  color: var(--alert-fg);
+  border: 1px solid var(--alert-border);
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.errors p { margin: 0; font-weight: 500; }
+.errors ul { margin: 0.25rem 0 0 1.25rem; padding: 0; }
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox label { margin: 0; font-weight: 400; }
+.checkbox span { font-size: 0.75rem; color: var(--muted); }
+
+.note {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.note p { margin: 0; }

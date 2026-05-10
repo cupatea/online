@@ -1,8 +1,8 @@
-<%= form_with model: service, class: "space-y-4" do |f| %>
+<%= form_with model: service, class: "stack" do |f| %>
   <% if service.errors.any? %>
-    <div class="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-900">
-      <p class="font-medium"><%= pluralize(service.errors.count, "error") %> prevented saving:</p>
-      <ul class="mt-1 list-disc pl-5">
+    <div class="errors">
+      <p><%= pluralize(service.errors.count, "error") %> prevented saving:</p>
+      <ul>
         <% service.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
         <% end %>
@@ -11,40 +11,36 @@
   <% end %>
 
   <div>
-    <%= f.label :name, class: "block text-sm font-medium text-stone-700" %>
-    <%= f.text_field :name, placeholder: "Caramba",
-                     class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
-    <p class="mt-1 text-xs text-stone-500">Display name only. Anything memorable.</p>
+    <%= f.label :name %>
+    <%= f.text_field :name, placeholder: "Caramba" %>
+    <p class="help">Display name only. Anything memorable.</p>
   </div>
 
   <div>
-    <%= f.label :hostname, class: "block text-sm font-medium text-stone-700" %>
-    <%= f.text_field :hostname, placeholder: "caramba.cupatea.online",
-                     class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm font-mono shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
-    <p class="mt-1 text-xs text-stone-500">Public hostname. A CNAME for this name must already point to the host running Caddy.</p>
+    <%= f.label :hostname %>
+    <%= f.text_field :hostname, placeholder: "caramba.example.com", class: "mono" %>
+    <p class="help">Public hostname. A CNAME for this name must already point to the host running Caddy.</p>
   </div>
 
-  <div class="grid grid-cols-3 gap-4">
-    <div class="col-span-2">
-      <%= f.label :upstream_host, "Upstream host", class: "block text-sm font-medium text-stone-700" %>
-      <%= f.text_field :upstream_host,
-                       class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm font-mono shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
+  <div class="row">
+    <div>
+      <%= f.label :upstream_host, "Upstream host" %>
+      <%= f.text_field :upstream_host, class: "mono" %>
     </div>
     <div>
-      <%= f.label :upstream_port, "Port", class: "block text-sm font-medium text-stone-700" %>
-      <%= f.number_field :upstream_port, min: 1, max: 65535,
-                         class: "mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm font-mono shadow-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500" %>
+      <%= f.label :upstream_port, "Port" %>
+      <%= f.number_field :upstream_port, min: 1, max: 65535, class: "mono" %>
     </div>
   </div>
 
-  <div class="flex items-center gap-2">
-    <%= f.check_box :enabled, class: "h-4 w-4 rounded border-stone-300" %>
-    <%= f.label :enabled, "Enabled", class: "text-sm text-stone-700" %>
-    <span class="text-xs text-stone-500">— uncheck to keep the row but stop serving the site.</span>
+  <div class="checkbox">
+    <%= f.check_box :enabled %>
+    <%= f.label :enabled, "Enabled" %>
+    <span>— uncheck to keep the row but stop serving the site.</span>
   </div>
 
-  <div class="flex items-center gap-3 pt-2">
-    <%= f.submit class: "rounded bg-stone-900 px-4 py-2 text-sm text-white hover:bg-stone-700" %>
-    <%= link_to "Cancel", root_path, class: "text-sm text-stone-600 hover:text-stone-900" %>
+  <div class="actions">
+    <%= f.submit %>
+    <%= link_to "Cancel", root_path, class: "button link" %>
   </div>
 <% end %>

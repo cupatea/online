@@ -1,64 +1,59 @@
 <% content_for :title, "Services" %>
 
 <% unless @setting.complete? %>
-  <div class="mb-6 rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-    <p class="font-medium">Finish setup first.</p>
+  <div class="warn">
+    <p><strong>Finish setup first.</strong></p>
     <p>Caddy can't issue certificates until you provide a Cloudflare API token and an ACME email.</p>
-    <p class="mt-2"><%= link_to "Open settings →", setting_path, class: "underline" %></p>
+    <p><%= link_to "Open settings →", setting_path %></p>
   </div>
 <% end %>
 
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-xl font-semibold tracking-tight">Services</h1>
-  <div class="flex gap-2">
-    <%= button_to "Republish", republish_path, method: :post,
-                  class: "rounded border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-100" %>
-    <%= link_to "+ Add service", new_service_path,
-                class: "rounded bg-stone-900 px-3 py-1.5 text-sm text-white hover:bg-stone-700" %>
+<div class="toolbar">
+  <h1>Services</h1>
+  <div class="actions">
+    <%= button_to "Republish", republish_path, method: :post, class: "button secondary" %>
+    <%= link_to "+ Add service", new_service_path, class: "button" %>
   </div>
 </div>
 
 <% if @services.any? %>
-  <div class="overflow-hidden rounded border border-stone-200 bg-white">
-    <table class="w-full text-sm">
-      <thead class="border-b border-stone-200 bg-stone-50 text-left text-xs uppercase tracking-wider text-stone-500">
+  <table>
+    <thead>
+      <tr>
+        <th>Hostname</th>
+        <th>Upstream</th>
+        <th>Enabled</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @services.each do |service| %>
         <tr>
-          <th class="px-4 py-2">Hostname</th>
-          <th class="px-4 py-2">Upstream</th>
-          <th class="px-4 py-2">Enabled</th>
-          <th class="px-4 py-2"></th>
+          <td>
+            <div class="name"><%= service.hostname %></div>
+            <div class="sub"><%= service.name %></div>
+          </td>
+          <td class="mono"><%= service.upstream %></td>
+          <td>
+            <% if service.enabled? %>
+              <span class="tag on">on</span>
+            <% else %>
+              <span class="tag off">off</span>
+            <% end %>
+          </td>
+          <td class="right">
+            <%= link_to "Edit", edit_service_path(service), class: "button link" %>
+            <%= button_to "Delete", service_path(service), method: :delete,
+                          onclick: "return confirm('Delete #{service.hostname}?')",
+                          class: "button danger" %>
+          </td>
         </tr>
-      </thead>
-      <tbody class="divide-y divide-stone-100">
-        <% @services.each do |service| %>
-          <tr>
-            <td class="px-4 py-2">
-              <div class="font-medium"><%= service.hostname %></div>
-              <div class="text-xs text-stone-500"><%= service.name %></div>
-            </td>
-            <td class="px-4 py-2 font-mono text-xs"><%= service.upstream %></td>
-            <td class="px-4 py-2">
-              <% if service.enabled? %>
-                <span class="rounded bg-green-100 px-2 py-0.5 text-xs text-green-900">on</span>
-              <% else %>
-                <span class="rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-600">off</span>
-              <% end %>
-            </td>
-            <td class="px-4 py-2 text-right">
-              <%= link_to "Edit", edit_service_path(service), class: "text-stone-600 hover:text-stone-900" %>
-              <%= button_to "Delete", service_path(service), method: :delete,
-                            data: { turbo_confirm: "Delete #{service.hostname}?" },
-                            class: "ml-3 text-red-600 hover:text-red-800",
-                            form_class: "inline" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
+      <% end %>
+    </tbody>
+  </table>
 <% else %>
-  <div class="rounded border border-dashed border-stone-300 bg-white p-8 text-center text-sm text-stone-600">
+  <div class="empty">
     <p>No services yet.</p>
-    <p class="mt-2"><%= link_to "Add your first service →", new_service_path, class: "underline" %></p>
+    <p><%= link_to "Add your first service →", new_service_path %></p>
   </div>
 <% end %>
