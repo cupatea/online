@@ -139,6 +139,8 @@ service.
 
 ## Updating
 
+On the host running the image:
+
 ```bash
 docker compose pull
 docker compose up -d
@@ -146,6 +148,23 @@ docker compose up -d
 
 The volume survives upgrades, so settings, services, the auto-generated
 `SECRET_KEY_BASE`, and issued certificates all carry over.
+
+## Releasing a new image
+
+Builds happen locally — no CI. To cut a release:
+
+```bash
+# One-time auth (token needs the write:packages scope)
+gh auth token | docker login ghcr.io -u cupatea --password-stdin
+
+# Build amd64 (NAS arch) and push
+script/release             # tags :latest
+script/release v0.1.0      # also tags :v0.1.0
+```
+
+The script runs `docker buildx build --platform linux/amd64 --push`. Set
+`PLATFORMS=linux/amd64,linux/arm64` if you also need arm64 (slow on x86
+hosts — uses QEMU emulation).
 
 ## How the admin pushes config
 

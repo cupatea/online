@@ -5,8 +5,12 @@ ARG RUBY_VERSION=4.0.2
 ARG CADDY_VERSION=2.8.4
 
 # Caddy with caddy-dns/cloudflare baked in (DNS-01 for ACME).
+# Passing v${CADDY_VERSION} explicitly to xcaddy pins the build — without it,
+# xcaddy fetches Caddy latest, which can drift away from the builder image's
+# Go toolchain and break in subtle ways (especially under QEMU multi-arch).
 FROM caddy:${CADDY_VERSION}-builder AS caddy-builder
-RUN xcaddy build --with github.com/caddy-dns/cloudflare
+ARG CADDY_VERSION
+RUN xcaddy build "v${CADDY_VERSION}" --with github.com/caddy-dns/cloudflare
 
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 WORKDIR /rails
