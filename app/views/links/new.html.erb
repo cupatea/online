@@ -1,7 +1,7 @@
 <% content_for :title, "Add link · #{@profile.name}" %>
 
 <%= render layout: "shared/modal" do %>
-  <h1>Add a link</h1>
+  <%= render "shared/manage_header", title: "Add link" %>
   <%= render "links/form", profile: @profile, link: @link,
              url: profile_links_path(@profile), method: :post, submit: "Add link" %>
 <% end %>

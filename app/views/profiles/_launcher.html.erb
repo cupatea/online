@@ -1,22 +1,26 @@
-<% links = profile.links.enabled.ordered %>
-<% if links.any? %>
-  <div class="tiles">
-    <% links.each_with_index do |link, i| %>
-      <a class="tile" style="--i: <%= i %>"
-         href="<%= link.url %>" target="_blank" rel="noopener noreferrer">
-        <%= link_icon(link) %>
-        <span class="tile-titles">
-          <span class="tile-name"><%= link.title %></span>
-          <% if link.description.present? %>
-            <span class="tile-desc"><%= link.description %></span>
-          <% end %>
-        </span>
-      </a>
-    <% end %>
-  </div>
-<% else %>
+<% links = profile.links.enabled.includes(:category).ordered.to_a %>
+<% if links.empty? %>
   <div class="empty">
     <p>No links yet.</p>
     <p><%= link_to "Add some →", profile_links_path(profile) %></p>
   </div>
+<% else %>
+  <% sections = profile.categories.ordered.filter_map { |c|
+       ls = links.select { |l| l.category_id == c.id }
+       [ c.name, ls ] if ls.any?
+     } %>
+  <% uncategorized = links.select { |l| l.category_id.nil? } %>
+  <% sections << [ "Other", uncategorized ] if uncategorized.any? %>
+
+  <% if sections.size <= 1 %>
+    <%# No categories, or just one — flat grid, no headings. %>
+    <%= render "profiles/tiles", links: links %>
+  <% else %>
+    <% sections.each do |label, ls| %>
+      <section class="dash-section">
+        <h2 class="dash-section-title"><%= label %></h2>
+        <%= render "profiles/tiles", links: ls %>
+      </section>
+    <% end %>
+  <% end %>
 <% end %>

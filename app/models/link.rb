@@ -1,5 +1,6 @@
 class Link < ApplicationRecord
   belongs_to :profile
+  belongs_to :category, optional: true
 
   validates :title, presence: true
   validates :url,   presence: true

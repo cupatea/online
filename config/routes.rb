@@ -27,6 +27,14 @@ Rails.application.routes.draw do
   get    ":slug/links/:id/edit", to: "links#edit",      as: :edit_profile_link
   patch  ":slug/links/:id",      to: "links#update",    as: :profile_link
   delete ":slug/links/:id",      to: "links#destroy"
+
+  get    ":slug/categories",          to: "categories#index",   as: :profile_categories
+  get    ":slug/categories/new",      to: "categories#new",     as: :new_profile_category
+  post   ":slug/categories",          to: "categories#create"
+  post   ":slug/categories/reorder",  to: "categories#reorder", as: :reorder_profile_categories
+  get    ":slug/categories/:id/edit", to: "categories#edit",    as: :edit_profile_category
+  patch  ":slug/categories/:id",      to: "categories#update",  as: :profile_category
+  delete ":slug/categories/:id",      to: "categories#destroy"
   get    ":slug",                to: "profiles#show",   as: :profile
 
   root "services#index"

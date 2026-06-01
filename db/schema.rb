@@ -10,8 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_135548) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_145341) do
+  create_table "categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position"
+    t.integer "profile_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["profile_id", "name"], name: "index_categories_on_profile_id_and_name", unique: true
+    t.index ["profile_id"], name: "index_categories_on_profile_id"
+  end
+
   create_table "links", force: :cascade do |t|
+    t.integer "category_id"
     t.datetime "created_at", null: false
     t.string "description"
     t.boolean "enabled", default: true, null: false
@@ -21,6 +32,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_135548) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.string "url", null: false
+    t.index ["category_id"], name: "index_links_on_category_id"
     t.index ["profile_id"], name: "index_links_on_profile_id"
   end
 
@@ -55,5 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_135548) do
     t.text "upstream_hosts", default: "", null: false
   end
 
+  add_foreign_key "categories", "profiles"
+  add_foreign_key "links", "categories"
   add_foreign_key "links", "profiles"
 end

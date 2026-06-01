@@ -635,35 +635,55 @@ body.dashboard .modal-backdrop {
   backdrop-filter: blur(3px);
 }
 
+/* Top-anchored: the panel always starts at the same place, grows downward, and
+   scrolls when it runs out of room (so it feels like the same modal). */
 body.dashboard .modal {
   position: fixed;
   inset: 0;
   z-index: 11;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 7vh 1.5rem;
   pointer-events: none; /* clicks fall through to the backdrop… */
 }
 
 body.dashboard .modal .panel {
   pointer-events: auto; /* …except on the panel itself */
-  max-height: calc(100vh - 3rem);
+  max-height: 86vh;
   overflow: auto;
   animation: modal-in 0.18s ease both;
 }
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Plain close (✕) in the top-right corner — fits the modal, always visible. */
+body.dashboard .modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 12;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+body.dashboard .modal-close svg { width: 14px; height: 14px; display: block; }
+body.dashboard .modal-close:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
 
 /* Management panel (new / edit profile, link forms) over the dashboard photo. */
 body.dashboard .panel {
+  position: relative;
   width: 100%;
   max-width: 34rem;
   margin: 0 auto;
-  padding: 1.75rem;
+  padding: 2.75rem 1.75rem;
   border-radius: 1rem;
   background: rgba(16, 18, 24, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -673,8 +693,22 @@ body.dashboard .panel {
 }
 
 body.dashboard .panel h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 1.25rem; }
-body.dashboard .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+body.dashboard .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; padding-right: 1.5rem; }
 body.dashboard .panel-head h1 { margin: 0; }
+body.dashboard .panel-head-left { display: flex; align-items: center; gap: 0.85rem; min-width: 0; }
+
+/* Section tabs (Links / Categories) — consistent on every management screen. */
+body.dashboard .manage-nav { display: flex; gap: 1.1rem; }
+body.dashboard .manage-tab {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+body.dashboard .manage-tab:hover { color: rgba(255, 255, 255, 0.75); }
+body.dashboard .manage-tab.current { color: #fff; }
 
 body.dashboard .panel-sub {
   font-size: 0.72rem;
@@ -703,8 +737,15 @@ body.dashboard .panel .button.link:hover { color: #fff; }
 body.dashboard .panel .rename { display: flex; gap: 0.5rem; align-items: center; }
 body.dashboard .panel .rename input[type="text"] { flex: 1; }
 
-body.dashboard .panel-sub-head { margin-top: 1.75rem; }
+body.dashboard .panel-sub-head { margin-top: 1.25rem; display: flex; justify-content: flex-end; }
 body.dashboard .panel-sub-head .panel-sub { margin: 0; }
+
+/* Management list grouped by category: each category has a plain title (like
+   "Disabled"); links drag within their own group. Categories are reordered in
+   the Categories section, not here. */
+body.dashboard .cat-group .panel-sub { margin: 1.5rem 0 0.5rem; }
+body.dashboard .cat-group:first-child .panel-sub { margin-top: 0; }
+body.dashboard .cat-links { list-style: none; margin: 0; padding: 0; }
 
 body.dashboard .link-list { list-style: none; margin: 0.25rem 0 0; padding: 0; }
 body.dashboard .link-item {
@@ -712,10 +753,8 @@ body.dashboard .link-item {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0;
 }
-body.dashboard .link-item:first-child { border-top: none; }
 body.dashboard .link-item-main { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
 body.dashboard .link-grip { cursor: grab; color: rgba(255, 255, 255, 0.4); flex: none; user-select: none; line-height: 1; }
 body.dashboard .link-grip:active { cursor: grabbing; }

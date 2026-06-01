@@ -30,6 +30,12 @@
     <%= f.text_field :description, placeholder: "optional subtitle" %>
   </div>
 
+  <div>
+    <%= f.label :category_id, "Category" %>
+    <%= f.select :category_id, profile.categories.ordered.pluck(:name, :id), include_blank: "— None —" %>
+    <p class="help">Manage the list from the <strong>Categories</strong> button. Groups links on the page when you have more than one.</p>
+  </div>
+
   <div class="checkbox">
     <%= f.check_box :enabled %>
     <%= f.label :enabled, "Enabled" %>

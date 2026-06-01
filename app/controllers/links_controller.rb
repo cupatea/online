@@ -3,8 +3,8 @@ class LinksController < ApplicationController
   before_action :load_link, only: [ :edit, :update, :destroy ]
 
   def index
-    # Enabled links are drag-reorderable; disabled ones sit in their own list.
-    @enabled_links  = @profile.links.enabled.ordered
+    @categories     = @profile.categories.ordered
+    @enabled_links  = @profile.links.enabled.includes(:category).ordered.to_a
     @disabled_links = @profile.links.where(enabled: false).ordered
   end
 
@@ -18,7 +18,7 @@ class LinksController < ApplicationController
   def create
     @link = @profile.links.build(link_params)
     if @link.save
-      redirect_to profile_path(@profile)
+      redirect_to profile_links_path(@profile)
     else
       render :new, status: :unprocessable_entity
     end
@@ -26,7 +26,7 @@ class LinksController < ApplicationController
 
   def update
     if @link.update(link_params)
-      redirect_to profile_path(@profile)
+      redirect_to profile_links_path(@profile)
     else
       render :edit, status: :unprocessable_entity
     end
@@ -56,6 +56,6 @@ class LinksController < ApplicationController
   end
 
   def link_params
-    params.require(:link).permit(:title, :description, :icon, :url, :position, :enabled)
+    params.require(:link).permit(:title, :description, :icon, :url, :position, :enabled, :category_id)
   end
 end

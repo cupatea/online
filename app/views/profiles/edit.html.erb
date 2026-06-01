@@ -1,10 +1,7 @@
 <% content_for :title, "Edit #{@profile.name}" %>
 
 <%= render layout: "shared/modal" do %>
-  <div class="panel-head">
-    <h1><%= @profile.name %></h1>
-    <%= link_to "Done", profile_path(@profile), class: "button secondary" %>
-  </div>
+  <%= render "shared/manage_header", title: @profile.name %>
 
   <% if @profile.errors.any? %>
     <div class="errors">

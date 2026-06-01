@@ -1,0 +1,20 @@
+<% content_for :title, "Add category · #{@profile.name}" %>
+
+<%= render layout: "shared/modal" do %>
+  <%= render "shared/manage_header", title: "Add category" %>
+  <%= form_with model: @category, url: profile_categories_path(@profile), class: "stack" do |f| %>
+    <% if @category.errors.any? %>
+      <div class="errors">
+        <ul><% @category.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+      </div>
+    <% end %>
+    <div>
+      <%= f.label :name %>
+      <%= f.text_field :name, placeholder: "Media", autofocus: true %>
+    </div>
+    <div class="actions">
+      <%= f.submit "Add category" %>
+      <%= link_to "Cancel", profile_categories_path(@profile), class: "button link" %>
+    </div>
+  <% end %>
+<% end %>

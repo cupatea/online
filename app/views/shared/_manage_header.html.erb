@@ -1,0 +1,27 @@
+<%# Consistent header for every management screen. A round red close sits in the
+    top-right corner (macOS-style, absolutely positioned so it never shifts the
+    tabs) and always closes the modal back to the profile. Pass `section`
+    (:links / :categories) for the tabs or `title` for a form, and an optional
+    `add_path` to show a "+ Add" button. %>
+<%= link_to profile_path(@profile), class: "modal-close", aria: { label: "Close" } do %>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+    <path d="M6 6l12 12M18 6 6 18"></path>
+  </svg>
+<% end %>
+
+<div class="panel-head">
+  <div class="panel-head-left">
+    <% if local_assigns[:section] %>
+      <nav class="manage-nav">
+        <%= link_to "Links", profile_links_path(@profile), class: "manage-tab#{' current' if section == :links}" %>
+        <%= link_to "Categories", profile_categories_path(@profile), class: "manage-tab#{' current' if section == :categories}" %>
+      </nav>
+    <% else %>
+      <h1><%= title %></h1>
+    <% end %>
+  </div>
+
+  <% if local_assigns[:add_path] %>
+    <%= link_to "+ Add", add_path, class: "button link add-link" %>
+  <% end %>
+</div>

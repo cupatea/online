@@ -1,21 +1,32 @@
 <% content_for :title, "Links · #{@profile.name}" %>
 
 <%= render layout: "shared/modal" do %>
-  <div class="panel-head">
-    <h1><%= @profile.name %> · Links</h1>
-    <%= link_to "Done", profile_path(@profile), class: "button secondary" %>
-  </div>
-
-  <div class="panel-head panel-sub-head">
-    <h2 class="panel-sub">Links</h2>
-    <%= link_to "+ Add link", new_profile_link_path(@profile), class: "button" %>
-  </div>
+  <%= render "shared/manage_header", section: :links, add_path: new_profile_link_path(@profile) %>
 
   <% if @enabled_links.any? %>
-    <ul class="link-list" data-reorder-url="<%= reorder_profile_links_path(@profile) %>">
-      <%= render partial: "links/row", collection: @enabled_links, as: :link %>
-    </ul>
-    <p class="help">Drag the handle to reorder.</p>
+    <div class="cat-groups" data-reorder-url="<%= reorder_profile_links_path(@profile) %>">
+      <% @categories.each do |cat| %>
+        <% ls = @enabled_links.select { |l| l.category_id == cat.id } %>
+        <% next if ls.empty? %>
+        <div class="cat-group">
+          <h2 class="panel-sub"><%= cat.name %></h2>
+          <ul class="cat-links">
+            <%= render partial: "links/row", collection: ls, as: :link %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% uncategorized = @enabled_links.select { |l| l.category_id.nil? } %>
+      <% if uncategorized.any? %>
+        <div class="cat-group">
+          <% if @categories.any? %><h2 class="panel-sub">Other</h2><% end %>
+          <ul class="cat-links">
+            <%= render partial: "links/row", collection: uncategorized, as: :link %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+    <p class="help">Drag a link to reorder it within its category.</p>
   <% end %>
 
   <% if @disabled_links.any? %>
@@ -31,55 +42,45 @@
 <% end %>
 
 <script>
-  // Drag-and-drop reordering of the enabled-links list (native HTML5 DnD).
-  // The disabled list has no data-reorder-url, so it's untouched.
+  // Links reorder within their own category (native HTML5 DnD). Categories are
+  // ordered in the Categories section, not here. Persists the full flattened
+  // order so each category's links stay contiguous.
   (function () {
-    var list = document.querySelector(".link-list[data-reorder-url]");
-    if (!list) return;
-    var url = list.dataset.reorderUrl;
-    var dragging = null;
+    var container = document.querySelector(".cat-groups[data-reorder-url]");
+    if (!container) return;
+    var url = container.dataset.reorderUrl, dragging = null;
 
-    list.querySelectorAll('.link-item[draggable="true"]').forEach(function (li) {
+    container.querySelectorAll(".link-item").forEach(function (li) {
       li.addEventListener("dragstart", function (e) {
-        dragging = li;
-        li.classList.add("dragging");
-        e.dataTransfer.effectAllowed = "move";
+        dragging = li; li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move";
         try { e.dataTransfer.setData("text/plain", li.dataset.id); } catch (x) {}
       });
-      li.addEventListener("dragend", function () {
-        li.classList.remove("dragging");
-        dragging = null;
-        persist();
-      });
+      li.addEventListener("dragend", function () { li.classList.remove("dragging"); dragging = null; persist(); });
     });
 
-    list.addEventListener("dragover", function (e) {
+    container.addEventListener("dragover", function (e) {
       if (!dragging) return;
       e.preventDefault();
-      var after = afterElement(e.clientY);
-      if (after == null) list.appendChild(dragging);
-      else list.insertBefore(dragging, after);
+      var ul = dragging.parentNode; // keep the link inside its own category
+      var after = closest(ul, e.clientY);
+      if (after == null) ul.appendChild(dragging); else ul.insertBefore(dragging, after);
     });
 
-    function afterElement(y) {
-      var els = [].slice.call(list.querySelectorAll(".link-item:not(.dragging)"));
-      var closest = null, closestOffset = -Infinity;
+    function closest(ul, y) {
+      var els = [].slice.call(ul.querySelectorAll(".link-item:not(.dragging)"));
+      var best = null, bo = -Infinity;
       els.forEach(function (el) {
-        var box = el.getBoundingClientRect();
-        var offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closestOffset) { closestOffset = offset; closest = el; }
+        var b = el.getBoundingClientRect(), o = y - b.top - b.height / 2;
+        if (o < 0 && o > bo) { bo = o; best = el; }
       });
-      return closest;
+      return best;
     }
 
     function persist() {
-      var ids = [].slice.call(list.querySelectorAll(".link-item")).map(function (li) { return li.dataset.id; });
-      var token = document.querySelector('meta[name="csrf-token"]');
-      fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": token ? token.content : "" },
-        body: JSON.stringify({ ids: ids })
-      });
+      var ids = [];
+      container.querySelectorAll(".cat-links .link-item").forEach(function (li) { ids.push(li.dataset.id); });
+      var t = document.querySelector('meta[name="csrf-token"]');
+      fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": t ? t.content : "" }, body: JSON.stringify({ ids: ids }) });
     }
   })();
 </script>

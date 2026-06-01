@@ -7,6 +7,7 @@ class Profile < ApplicationRecord
   ].freeze
 
   has_many :links, -> { ordered }, dependent: :destroy
+  has_many :categories, -> { ordered }, dependent: :destroy
 
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :slug, presence: true,
