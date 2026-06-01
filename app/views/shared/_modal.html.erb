@@ -1,0 +1,14 @@
+<%# A modal window over the profile launcher. The profile's link tiles and the
+    dock stay visible behind it; the backdrop closes back to the profile.
+    Management views render their content into this via `render layout:`. %>
+<%= render "shared/background", seed: @profile.id %>
+<%= render "profiles/launcher", profile: @profile %>
+
+<%= link_to "", profile_path(@profile), class: "modal-backdrop", aria: { label: "Close" } %>
+<div class="modal">
+  <div class="panel">
+    <%= yield %>
+  </div>
+</div>
+
+<%= render "shared/dock", current: @profile %>

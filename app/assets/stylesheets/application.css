@@ -581,7 +581,7 @@ body.dashboard .dock {
   position: fixed;
   right: 1rem;
   bottom: 1rem;
-  z-index: 2;
+  z-index: 20; /* above the modal, so other profiles stay reachable while editing */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -621,6 +621,41 @@ body.dashboard .dock-item.is-disabled {
   opacity: 0.35;
   cursor: default;
   pointer-events: none;
+}
+
+/* Editing appears as a window over the profile launcher: the tiles + dock stay
+   visible behind a dimmed, blurred backdrop. The backdrop is a link back to the
+   profile (click outside to close). */
+body.dashboard .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+body.dashboard .modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: none; /* clicks fall through to the backdrop… */
+}
+
+body.dashboard .modal .panel {
+  pointer-events: auto; /* …except on the panel itself */
+  max-height: calc(100vh - 3rem);
+  overflow: auto;
+  animation: modal-in 0.18s ease both;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Management panel (new / edit profile, link forms) over the dashboard photo. */

@@ -1,0 +1,22 @@
+<% links = profile.links.enabled.ordered %>
+<% if links.any? %>
+  <div class="tiles">
+    <% links.each_with_index do |link, i| %>
+      <a class="tile" style="--i: <%= i %>"
+         href="<%= link.url %>" target="_blank" rel="noopener noreferrer">
+        <%= link_icon(link) %>
+        <span class="tile-titles">
+          <span class="tile-name"><%= link.title %></span>
+          <% if link.description.present? %>
+            <span class="tile-desc"><%= link.description %></span>
+          <% end %>
+        </span>
+      </a>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <p>No links yet.</p>
+    <p><%= link_to "Add some →", profile_links_path(profile) %></p>
+  </div>
+<% end %>

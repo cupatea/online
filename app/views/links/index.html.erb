@@ -1,8 +1,6 @@
 <% content_for :title, "Links · #{@profile.name}" %>
 
-<%= render "shared/background", seed: @profile.id %>
-
-<div class="panel">
+<%= render layout: "shared/modal" do %>
   <div class="panel-head">
     <h1><%= @profile.name %> · Links</h1>
     <%= link_to "Done", profile_path(@profile), class: "button secondary" %>
@@ -30,7 +28,7 @@
   <% if @enabled_links.empty? && @disabled_links.empty? %>
     <p class="help">No links yet. Add your first one above.</p>
   <% end %>
-</div>
+<% end %>
 
 <script>
   // Drag-and-drop reordering of the enabled-links list (native HTML5 DnD).
