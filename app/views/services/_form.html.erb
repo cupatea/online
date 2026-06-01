@@ -11,28 +11,49 @@
   <% end %>
 
   <div>
-    <%= f.label :name %>
-    <%= f.text_field :name, placeholder: "Caramba" %>
-    <p class="help">Display name only. Anything memorable.</p>
+    <%= f.label :hostname %>
+    <div class="row">
+      <%= f.text_field :subdomain, class: "mono", placeholder: "caramba", autofocus: true %>
+      <%= f.text_field :base_domain, list: "base-domains", class: "mono", placeholder: "bulka.in" %>
+    </div>
+    <p class="help">Subdomain + base domain → <span class="mono">caramba.bulka.in</span>. Leave the subdomain empty to map the whole base domain (apex). A CNAME for the result must point at the host running Caddy.</p>
   </div>
 
   <div>
-    <%= f.label :hostname %>
-    <%= f.text_field :hostname, placeholder: "caramba.example.com", class: "mono" %>
-    <p class="help">Public hostname. A CNAME for this name must already point to the host running Caddy.</p>
+    <%= f.label :name %>
+    <%= f.text_field :name, placeholder: "auto from subdomain" %>
+    <p class="help">Leave blank to auto-name from the subdomain (e.g. <span class="mono">caramba</span> → Caramba).</p>
   </div>
 
   <div class="row">
     <div>
       <%= f.label :upstream_host, "Upstream host" %>
-      <%= f.text_field :upstream_host, class: "mono" %>
+      <%= f.text_field :upstream_host, list: "upstream-hosts", class: "mono" %>
     </div>
     <div>
       <%= f.label :upstream_port, "Port" %>
-      <%= f.number_field :upstream_port, min: 1, max: 65535, class: "mono" %>
+      <%= f.number_field :upstream_port, list: "upstream-ports", min: 1, max: 65535, class: "mono" %>
     </div>
   </div>
-  <p class="help">Docker Desktop (macOS/Windows): use <span class="mono">host.docker.internal</span> to reach services on the host. Linux with <span class="mono">network_mode: host</span>: <span class="mono">localhost</span>.</p>
+  <p class="help">
+    <% if @detected_ports.any? %>
+      Detected listening ports: <span class="mono"><%= @detected_ports.first(8).join(", ") %></span>. Pick one or type your own.
+    <% else %>
+      Docker Desktop (macOS/Windows): <span class="mono">host.docker.internal</span>. Linux with <span class="mono">network_mode: host</span>: <span class="mono">localhost</span>.
+    <% end %>
+  </p>
+
+  <div>
+    <%= f.label :icon %>
+    <%= f.text_field :icon, placeholder: "🌮 or an image URL" %>
+    <p class="help">Emoji or image URL. Leave blank to use the site's favicon on the dashboard.</p>
+  </div>
+
+  <div>
+    <%= f.label :description %>
+    <%= f.text_field :description, placeholder: "Food tracker" %>
+    <p class="help">Short subtitle shown on the dashboard tile.</p>
+  </div>
 
   <div class="checkbox">
     <%= f.check_box :enabled %>
@@ -45,3 +66,13 @@
     <%= link_to "Cancel", root_path, class: "button link" %>
   </div>
 <% end %>
+
+<datalist id="base-domains">
+  <% @base_domain_options.each do |domain| %><option value="<%= domain %>"></option><% end %>
+</datalist>
+<datalist id="upstream-hosts">
+  <% @upstream_host_options.each do |host| %><option value="<%= host %>"></option><% end %>
+</datalist>
+<datalist id="upstream-ports">
+  <% @port_options.each do |port| %><option value="<%= port %>"></option><% end %>
+</datalist>

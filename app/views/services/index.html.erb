@@ -20,8 +20,8 @@
   <table>
     <thead>
       <tr>
-        <th>Hostname</th>
         <th>Upstream</th>
+        <th>Hostname</th>
         <th>Enabled</th>
         <th></th>
       </tr>
@@ -30,10 +30,10 @@
       <% @services.each do |service| %>
         <tr>
           <td>
-            <div class="name"><%= service.hostname %></div>
-            <div class="sub"><%= service.name %></div>
+            <div class="name"><%= service.name %></div>
+            <div class="sub"><%=  service.upstream %></div>
           </td>
-          <td class="mono"><%= service.upstream %></td>
+          <td class="mono"><%= service.hostname %></td>
           <td>
             <% if service.enabled? %>
               <span class="tag on">on</span>

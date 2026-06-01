@@ -16,4 +16,16 @@ class Setting < ApplicationRecord
   def complete?
     acme_email.present? && cloudflare_token.present?
   end
+
+  # Preset lists for the service form. One entry per line; the first line is the
+  # preselected default. Used as datalist suggestions, merged with values
+  # derived from existing services.
+  def upstream_host_list = list_from(upstream_hosts)
+  def base_domain_list   = list_from(base_domains)
+
+  private
+
+  def list_from(text)
+    text.to_s.split("\n").map(&:strip).reject(&:empty?).uniq
+  end
 end

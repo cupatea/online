@@ -7,19 +7,25 @@
     <%= csp_meta_tag %>
     <%= yield :head %>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <% if dashboard_mode? %>
+      <link rel="preconnect" href="https://services.bonjourr.fr" crossorigin>
+      <link rel="preconnect" href="https://images.unsplash.com">
+    <% end %>
     <%= stylesheet_link_tag :app %>
   </head>
 
-  <body>
-    <header>
-      <div>
-        <%= link_to "Caddy admin", root_path, class: "brand" %>
-        <nav>
-          <%= link_to "Services", root_path %>
-          <%= link_to "Settings", setting_path %>
-        </nav>
-      </div>
-    </header>
+  <body class="<%= "dashboard" if dashboard_mode? %>">
+    <% unless dashboard_mode? %>
+      <header>
+        <div>
+          <%= link_to "Caddy admin", root_path, class: "brand" %>
+          <nav>
+            <%= link_to "Services", root_path %>
+            <%= link_to "Settings", setting_path %>
+          </nav>
+        </div>
+      </header>
+    <% end %>
 
     <main>
       <% if notice %><div class="flash notice"><%= notice %></div><% end %>

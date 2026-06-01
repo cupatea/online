@@ -10,11 +10,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_10_104745) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_104356) do
   create_table "services", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "description"
     t.boolean "enabled", default: true, null: false
     t.string "hostname", null: false
+    t.string "icon"
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.string "upstream_host", default: "localhost", null: false
@@ -24,8 +26,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_10_104745) do
 
   create_table "settings", force: :cascade do |t|
     t.string "acme_email", default: "", null: false
+    t.text "base_domains", default: "", null: false
     t.string "cloudflare_token", default: "", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "upstream_hosts", default: "", null: false
   end
 end

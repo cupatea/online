@@ -115,8 +115,8 @@ Then `docker compose up -d`.
 
 ### NAS web UIs (Synology, UGOS, Portainer, etc.)
 
-The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003`, so
-most NAS container UIs auto-detect them. In those UIs:
+The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003 3004`,
+so most NAS container UIs auto-detect them. In those UIs:
 
 - Pull `ghcr.io/cupatea/online:latest`
 - Map ports: `80 → 80`, `443 → 443`, `3003 → 3003`
@@ -149,6 +149,29 @@ on Tailscale, the host's LAN IP, etc.
    end-to-end).
 
 That's it. No Caddyfile editing. No SSH. No restarts.
+
+## Dashboard
+
+Alongside the admin UI, the app serves a read-only **dashboard** — a launcher
+that shows each enabled service as a clickable tile (icon, name, description)
+that opens `https://<hostname>` in a new tab. It has no admin or settings
+chrome, and admin routes are unreachable on it.
+
+The dashboard listens on its own port (`DASHBOARD_PORT`, default `3004`) so you
+can publish it while keeping the admin port (`3003`) private. To give it a
+public hostname, just add a normal service in the admin UI:
+
+- **Hostname**: e.g. `home.example.com`
+- **Upstream host**: `localhost`
+- **Upstream port**: `3004`
+
+Caddy and Rails share the container, so it reaches `localhost:3004` over the
+in-container loopback — you don't need to publish port 3004 on the host for
+this. (Publishing `3004:3004` is only for reaching the dashboard *directly* at
+`http://<host>:3004`, without going through Caddy.)
+
+The per-service **icon** (an emoji like `🌮` or an image URL) and
+**description** fields are what show up on each tile.
 
 ## Verifying it works
 
@@ -268,6 +291,9 @@ boundary as the SQLite DB it came from.
   who can reach `<host>:3003` can edit settings. If that's not OK, restrict
   network access (Tailscale ACLs, firewall) or front the admin app with
   HTTP basic auth.
+- The dashboard (`<host>:3004`) is the surface that's safe to expose publicly:
+  it only links out to your services and can't reach any admin or settings
+  route. Keep the admin port (`3003`) off any public hostname.
 - The Cloudflare token grants edit access to one DNS zone. Scope it tightly
   and rotate it if compromised.
 - `online_data` (issued certs + ACME account key + SQLite with the token +

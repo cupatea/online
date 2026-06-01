@@ -17,10 +17,11 @@ fi
 export XDG_DATA_HOME=/rails/storage
 export XDG_CONFIG_HOME=/rails/storage
 
-# Initialize/migrate the DB before booting the server.
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
-  ./bin/rails db:prepare
-fi
+# Initialize/migrate the DB before booting the web server (puma). Skipped for
+# one-off commands like `rails console` so they don't trigger a migration.
+case "$*" in
+  *puma*) ./bin/rails db:prepare ;;
+esac
 
 # Start Caddy in the background. The bootstrap Caddyfile only enables the
 # admin API on :2019; Rails publishes the real config there once it boots.

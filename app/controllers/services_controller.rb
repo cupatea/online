@@ -1,5 +1,6 @@
 class ServicesController < ApplicationController
   before_action :load_service, only: [ :edit, :update, :destroy ]
+  before_action :load_form_options, only: [ :new, :create, :edit, :update ]
 
   def index
     @services = Service.ordered
@@ -7,7 +8,12 @@ class ServicesController < ApplicationController
   end
 
   def new
-    @service = Service.new(upstream_host: "localhost", enabled: true)
+    @service = Service.new(
+      enabled:       true,
+      upstream_host: @default_upstream_host,
+      base_domain:   @default_base_domain,
+      upstream_port: @detected_ports.first
+    )
   end
 
   def create
@@ -20,6 +26,7 @@ class ServicesController < ApplicationController
   end
 
   def edit
+    @service.assign_host_parts(@base_domain_options)
   end
 
   def update
@@ -48,8 +55,25 @@ class ServicesController < ApplicationController
     @service = Service.find(params[:id])
   end
 
+  # Datalist suggestions + sensible defaults for the form: configured presets
+  # first (their top entry is the default), then values learned from existing
+  # services. Ports come from HostPorts, minus ones already mapped.
+  def load_form_options
+    setting = Setting.instance
+
+    @upstream_host_options = (setting.upstream_host_list + Service.distinct_upstream_hosts).uniq
+    @base_domain_options   = (setting.base_domain_list + Service.derived_base_domains).uniq
+    @default_upstream_host = @upstream_host_options.first.presence || "localhost"
+    @default_base_domain   = @base_domain_options.first
+
+    mapped          = Service.where.not(id: @service&.id).pluck(:upstream_port)
+    @detected_ports = HostPorts.detected(exclude: mapped)
+    @port_options   = HostPorts.suggestions(exclude: mapped)
+  end
+
   def service_params
-    params.require(:service).permit(:name, :hostname, :upstream_host, :upstream_port, :enabled)
+    params.require(:service)
+          .permit(:name, :subdomain, :base_domain, :upstream_host, :upstream_port, :enabled, :icon, :description)
   end
 
   # Push to Caddy synchronously so any failure (Caddy down, bad config) shows

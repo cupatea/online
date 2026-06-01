@@ -24,6 +24,6 @@ class SettingsController < ApplicationController
   end
 
   def setting_params
-    params.require(:setting).permit(:acme_email, :cloudflare_token)
+    params.require(:setting).permit(:acme_email, :cloudflare_token, :upstream_hosts, :base_domains)
   end
 end

@@ -282,7 +282,8 @@ label {
 
 input[type="text"],
 input[type="email"],
-input[type="number"] {
+input[type="number"],
+textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
   font: inherit;
@@ -292,15 +293,34 @@ input[type="number"] {
   background: var(--card);
 }
 
+textarea { resize: vertical; }
+
 input[type="text"].mono,
 input[type="email"].mono,
-input[type="number"].mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+input[type="number"].mono,
+textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-input:focus {
+input:focus, textarea:focus {
   outline: none;
   border-color: var(--muted);
   box-shadow: 0 0 0 1px var(--muted);
 }
+
+.presets {
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin: 0;
+}
+
+.presets legend {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0 0.25rem;
+}
+
+.presets > div + div { margin-top: 1rem; }
+.presets > .help { margin-top: 0; margin-bottom: 1rem; }
 
 .help {
   font-size: 0.75rem;
@@ -344,3 +364,208 @@ input:focus {
 }
 
 .note p { margin: 0; }
+
+/* ============================================================
+   Dashboard — Bonjourr-style launcher. Scoped to body.dashboard
+   so the admin pages keep their plain styling. A full-bleed photo
+   (from Bonjourr's public daylight image service) sits behind
+   frosted-glass link tiles. Falls back to a gradient if the photo
+   can't load (offline / service down).
+   ============================================================ */
+body.dashboard {
+  background: #0b0d12;
+  color: #fff;
+  font-family: -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif;
+  font-weight: 300;
+}
+
+/* Default background image, self-hosted in public/ so it works offline and
+   whenever the photo service is unreachable. Painted at the very back; it shows
+   instantly on load, and the live daylight photo (#dash-bg) crossfades over it
+   once it arrives. */
+body.dashboard::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background-color: #0b0d12;
+  background-image: url("/default-bg.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* The photo. Set via JS (#dash-bg.style.backgroundImage); fades in on load. */
+#dash-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.05);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+#dash-bg.loaded { opacity: 1; }
+
+/* Scrim over the photo for mood + legibility (Bonjourr dims to ~0.8). */
+body.dashboard::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.5));
+}
+
+body.dashboard main {
+  max-width: 60rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8vh 1.5rem;
+}
+
+body.dashboard .tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.85rem;
+}
+
+/* Frosted-glass link tile: icon chip + name/description, laid out in a row. */
+body.dashboard .tile {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 8px 24px -14px rgba(0, 0, 0, 0.6);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  animation: tile-in 0.5s backwards cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+}
+
+body.dashboard .tile:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.30);
+  transform: translateY(-2px);
+}
+
+body.dashboard .tile:active { transform: translateY(0); }
+
+body.dashboard .tile-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+body.dashboard .tile-name {
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+body.dashboard .tile-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+body.dashboard .tile-name,
+body.dashboard .tile-desc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* White favicon chip, Bonjourr-style. */
+body.dashboard .tile-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #333;
+  background: #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+body.dashboard img.tile-icon { object-fit: contain; padding: 0.35rem; }
+body.dashboard .tile-icon-auto { position: relative; }
+
+/* Auto icon: favicon over a letter monogram on the white chip. The favicon's
+   white background covers the monogram when it loads; onerror removes it. */
+body.dashboard .tile-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #555;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+body.dashboard .tile-favicon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.4rem;
+  background: #fff;
+}
+
+body.dashboard .empty {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border-radius: 0.9rem;
+  padding: 3rem;
+}
+
+/* Photo credit (Unsplash attribution), bottom corner. */
+.dash-credit {
+  position: fixed;
+  right: 0.9rem;
+  bottom: 0.7rem;
+  z-index: 1;
+  max-width: 60vw;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 0.4s ease, color 0.2s ease;
+}
+
+.dash-credit.shown { opacity: 1; }
+.dash-credit:hover { color: #fff; }
+
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.dashboard .tile { animation: none; }
+  #dash-bg { transition: none; }
+}

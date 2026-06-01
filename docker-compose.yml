@@ -16,6 +16,11 @@ services:
       - "80:80"
       - "443:443"
       - "3003:3003"
+      # Optional: only needed to reach the dashboard launcher *directly* at
+      # http://<host>:3004. The usual path doesn't need this — point a Caddy
+      # service at upstream localhost:3004 and the dashboard is served over the
+      # in-container loopback.
+      # - "3004:3004"
     volumes:
       - online_data:/rails/storage
 

@@ -31,6 +31,14 @@ threads threads_count, threads_count
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 port ENV.fetch("PORT", 3000)
 
+# Second listener for the public "dashboard" launcher. Same process and thread
+# pool; requests are told apart by which local port they arrived on (see
+# ApplicationController.dashboard_request?). Blank/unset => admin only.
+# Plain Ruby rather than .present? — this file is evaluated before the app and
+# Active Support are fully loaded.
+dashboard_port = ENV["DASHBOARD_PORT"]
+port dashboard_port if dashboard_port && !dashboard_port.strip.empty?
+
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
 

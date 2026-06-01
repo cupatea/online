@@ -1,0 +1,84 @@
+<% content_for :title, "Dashboard" %>
+
+<div id="dash-bg"></div>
+
+<% if @services.any? %>
+  <div class="tiles">
+    <% @services.each_with_index do |service, i| %>
+      <a class="tile" style="--i: <%= i %>"
+         href="https://<%= service.hostname %>" target="_blank" rel="noopener noreferrer">
+        <%= tile_icon(service) %>
+        <span class="tile-titles">
+          <span class="tile-name"><%= service.name %></span>
+          <% if service.description.present? %>
+            <span class="tile-desc"><%= service.description %></span>
+          <% end %>
+        </span>
+      </a>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <p>No services available yet.</p>
+  </div>
+<% end %>
+
+<a class="dash-credit" id="dash-credit" target="_blank" rel="noopener noreferrer"></a>
+
+<script>
+  // Background photos from Bonjourr's public, keyless image service — the same
+  // curated Unsplash "Daylight" collections Bonjourr uses, swapped by time of
+  // day. Cached for the hour; falls back to the CSS gradient if unreachable.
+  (function () {
+    var bg = document.getElementById("dash-bg");
+    var credit = document.getElementById("dash-credit");
+    if (!bg) return;
+
+    function period() {
+      var d = new Date();
+      var mins = d.getHours() * 60 + d.getMinutes();
+      var sunrise = 420, sunset = 1320; // Bonjourr defaults: 07:00 / 22:00
+      if (mins <= sunrise - 60) return "night";
+      if (mins <= sunrise + 60) return "noon";   // sunrise set
+      if (mins <= sunset - 60) return "day";
+      if (mins <= sunset + 60) return "evening"; // sunset set
+      return "night";
+    }
+
+    function show(img) {
+      var pre = new Image();
+      pre.onload = function () {
+        bg.style.backgroundImage = "url('" + img.url + "')";
+        bg.classList.add("loaded");
+        if (credit && img.name) {
+          credit.textContent = "Photo: " + img.name + " / Unsplash";
+          if (img.page) credit.href = img.page;
+          credit.classList.add("shown");
+        }
+      };
+      pre.src = img.url;
+    }
+
+    var key = new Date().toISOString().slice(0, 13) + "-" + period();
+    try {
+      var cached = JSON.parse(localStorage.getItem("dashBg") || "null");
+      if (cached && cached.key === key) { show(cached.img); return; }
+    } catch (e) {}
+
+    var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+    var w = Math.min(Math.round(window.screen.width * dpr), 3840);
+    var h = Math.min(Math.round(window.screen.height * dpr), 2160);
+
+    fetch("https://services.bonjourr.fr/backgrounds/bonjourr/images/daylight?w=" + w + "&h=" + h)
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        var list = json["bonjourr-images-daylight-" + period()] || [];
+        if (!list.length) return;
+        var p = list[Math.floor(Math.random() * list.length)];
+        var img = { url: (p.urls && p.urls.full) || p.url, name: p.name || p.username, page: p.page };
+        show(img);
+        try { localStorage.setItem("dashBg", JSON.stringify({ key: key, img: img })); } catch (e) {}
+      })
+      .catch(function () { /* offline / service down → CSS gradient fallback */ });
+  })();
+</script>

@@ -28,6 +28,23 @@
     </p>
   </div>
 
+  <fieldset class="presets">
+    <legend>Form defaults</legend>
+    <p class="help">Suggestions for the Add/Edit service form. One per line; the top line is preselected. Values from your existing services are also suggested automatically.</p>
+
+    <div>
+      <%= f.label :base_domains, "Base domains" %>
+      <%= f.text_area :base_domains, rows: 3, class: "mono"%>
+      <p class="help">You type just the subdomain (e.g. <span class="mono">caramba</span>) and this gets appended.</p>
+    </div>
+
+    <div>
+      <%= f.label :upstream_hosts, "Upstream hosts" %>
+      <%= f.text_area :upstream_hosts, rows: 3, class: "mono" %>
+      <p class="help">The host/IP your services run on.</p>
+    </div>
+  </fieldset>
+
   <div>
     <%= f.submit "Save settings" %>
   </div>

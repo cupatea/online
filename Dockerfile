@@ -33,6 +33,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_WITHOUT="development" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
     PORT="3003" \
+    DASHBOARD_PORT="3004" \
     RAILS_LOG_TO_STDOUT="1" \
     RAILS_SERVE_STATIC_FILES="1" \
     CADDY_ADMIN_URL="http://localhost:2019"
@@ -73,10 +74,14 @@ LABEL org.opencontainers.image.source="https://github.com/cupatea/online"
 LABEL org.opencontainers.image.description="Caddy + a Rails admin UI in one image. Configure subdomains via the UI; the admin pushes Caddyfile updates to Caddy's admin API in-process."
 LABEL org.opencontainers.image.licenses="MIT"
 
+# Start Puma straight from config/puma.rb (not `rails server`) so it honours
+# BOTH binds — the admin PORT and the dashboard DASHBOARD_PORT. `rails server`
+# forces a single bind and would silently drop the second listener.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-# 80/443 are Caddy's public ports; 3003 is the admin UI; 2019 is Caddy's
-# admin API (loopback-only — listed for completeness, not for binding).
-EXPOSE 80 443 3003
+# 80/443 are Caddy's public ports; 3003 is the admin UI; 3004 is the public
+# dashboard launcher; 2019 is Caddy's admin API (loopback-only — listed for
+# completeness, not for binding).
+EXPOSE 80 443 3003 3004
 # Single state volume — NAS GUIs auto-detect this and pre-fill a mount for it.
 VOLUME ["/rails/storage"]
-CMD ["./bin/rails", "server"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
