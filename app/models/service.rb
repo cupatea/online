@@ -4,6 +4,11 @@ class Service < ApplicationRecord
   # A blank subdomain maps the apex (the whole base domain).
   attr_accessor :subdomain, :base_domain
 
+  # Dashboard grouping: "general" links (music, video, media…) render above
+  # "technical" ones (monitoring, NAS…).
+  CATEGORIES = %w[general technical].freeze
+
+  validates :category, inclusion: { in: CATEGORIES }
   validates :name,          presence: true
   validates :hostname,      presence: true,
                             uniqueness: { case_sensitive: false },

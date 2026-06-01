@@ -2,21 +2,27 @@
 
 <div id="dash-bg"></div>
 
-<% if @services.any? %>
-  <div class="tiles">
-    <% @services.each_with_index do |service, i| %>
-      <a class="tile" style="--i: <%= i %>"
-         href="https://<%= service.hostname %>" target="_blank" rel="noopener noreferrer">
-        <%= tile_icon(service) %>
-        <span class="tile-titles">
-          <span class="tile-name"><%= service.name %></span>
-          <% if service.description.present? %>
-            <span class="tile-desc"><%= service.description %></span>
-          <% end %>
-        </span>
-      </a>
-    <% end %>
-  </div>
+<% if @sections.any? %>
+  <% show_titles = @sections.size > 1 %>
+  <% @sections.each do |label, services| %>
+    <section class="dash-section">
+      <% if show_titles %><h2 class="dash-section-title"><%= label %></h2><% end %>
+      <div class="tiles">
+        <% services.each_with_index do |service, i| %>
+          <a class="tile" style="--i: <%= i %>"
+             href="https://<%= service.hostname %>" target="_blank" rel="noopener noreferrer">
+            <%= tile_icon(service) %>
+            <span class="tile-titles">
+              <span class="tile-name"><%= service.name %></span>
+              <% if service.description.present? %>
+                <span class="tile-desc"><%= service.description %></span>
+              <% end %>
+            </span>
+          </a>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
 <% else %>
   <div class="empty">
     <p>No services available yet.</p>

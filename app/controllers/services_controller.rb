@@ -73,7 +73,7 @@ class ServicesController < ApplicationController
 
   def service_params
     params.require(:service)
-          .permit(:name, :subdomain, :base_domain, :upstream_host, :upstream_port, :enabled, :icon, :description)
+          .permit(:name, :subdomain, :base_domain, :upstream_host, :upstream_port, :enabled, :icon, :description, :category)
   end
 
   # Push to Caddy synchronously so any failure (Caddy down, bad config) shows

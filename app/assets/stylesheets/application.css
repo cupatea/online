@@ -283,7 +283,8 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="number"],
-textarea {
+textarea,
+select {
   width: 100%;
   padding: 0.5rem 0.75rem;
   font: inherit;
@@ -291,16 +292,18 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 0.25rem;
   background: var(--card);
+  color: var(--fg);
 }
 
 textarea { resize: vertical; }
+select { appearance: none; -webkit-appearance: none; cursor: pointer; }
 
 input[type="text"].mono,
 input[type="email"].mono,
 input[type="number"].mono,
 textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--muted);
   box-shadow: 0 0 0 1px var(--muted);
@@ -426,6 +429,18 @@ body.dashboard main {
   flex-direction: column;
   justify-content: center;
   padding: 8vh 1.5rem;
+}
+
+body.dashboard .dash-section + .dash-section { margin-top: 2.25rem; }
+
+body.dashboard .dash-section-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 body.dashboard .tiles {

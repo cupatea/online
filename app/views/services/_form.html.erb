@@ -25,6 +25,12 @@
     <p class="help">Leave blank to auto-name from the subdomain (e.g. <span class="mono">caramba</span> → Caramba).</p>
   </div>
 
+  <div>
+    <%= f.label :category %>
+    <%= f.select :category, Service::CATEGORIES.map { |c| [ c.capitalize, c ] } %>
+    <p class="help">Dashboard grouping. <span class="mono">General</span> (music, video, media…) shows above <span class="mono">Technical</span> (monitoring, NAS…).</p>
+  </div>
+
   <div class="row">
     <div>
       <%= f.label :upstream_host, "Upstream host" %>
