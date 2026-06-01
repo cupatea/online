@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   get    ":slug/links",          to: "links#index",     as: :profile_links
   get    ":slug/links/new",      to: "links#new",       as: :new_profile_link
   post   ":slug/links",          to: "links#create"
+  post   ":slug/links/reorder",  to: "links#reorder",   as: :reorder_profile_links
   get    ":slug/links/:id/edit", to: "links#edit",      as: :edit_profile_link
   patch  ":slug/links/:id",      to: "links#update",    as: :profile_link
   delete ":slug/links/:id",      to: "links#destroy"

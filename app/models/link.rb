@@ -6,6 +6,7 @@ class Link < ApplicationRecord
 
   before_validation :normalize_url
 
+  scope :enabled, -> { where(enabled: true) }
   scope :ordered, -> { order(:position, :id) }
 
   private

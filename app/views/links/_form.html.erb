@@ -30,6 +30,12 @@
     <%= f.text_field :description, placeholder: "optional subtitle" %>
   </div>
 
+  <div class="checkbox">
+    <%= f.check_box :enabled %>
+    <%= f.label :enabled, "Enabled" %>
+    <span>— uncheck to keep it in the list but hide it from the dashboard.</span>
+  </div>
+
   <div class="actions">
     <%= f.submit submit %>
     <%= link_to "Cancel", profile_links_path(profile), class: "button link" %>

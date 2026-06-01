@@ -2,7 +2,7 @@ class ProfilesController < ApplicationController
   before_action :load_profile, only: [ :show, :edit, :update, :destroy ]
 
   def show
-    @links = @profile.links.ordered
+    @links = @profile.links.enabled.ordered
   end
 
   def new
@@ -12,7 +12,7 @@ class ProfilesController < ApplicationController
   def create
     @profile = Profile.new(profile_params)
     if @profile.save
-      redirect_to edit_profile_path(@profile), notice: "Profile created. Add some links."
+      redirect_to profile_links_path(@profile)
     else
       render :new, status: :unprocessable_entity
     end
@@ -23,7 +23,7 @@ class ProfilesController < ApplicationController
 
   def update
     if @profile.update(profile_params)
-      redirect_to edit_profile_path(@profile), notice: "Profile renamed."
+      redirect_to edit_profile_path(@profile)
     else
       render :edit, status: :unprocessable_entity
     end

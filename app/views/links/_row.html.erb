@@ -1,0 +1,13 @@
+<li class="link-item <%= "is-disabled" unless link.enabled? %>" data-id="<%= link.id %>"<% if link.enabled? %> draggable="true"<% end %>>
+  <span class="link-item-main">
+    <span class="link-grip" aria-hidden="true">⠿</span>
+    <%= link_icon(link) %>
+    <span class="link-item-title"><%= link.title %></span>
+    <% unless link.enabled? %><span class="link-flag">disabled</span><% end %>
+  </span>
+  <span class="link-item-actions">
+    <%= link_to "Edit", edit_profile_link_path(@profile, link), class: "button link" %>
+    <%= button_to "Delete", profile_link_path(@profile, link), method: :delete,
+                  onclick: "return confirm('Delete #{j link.title}?')", class: "button danger" %>
+  </span>
+</li>

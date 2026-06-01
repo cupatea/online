@@ -27,16 +27,29 @@
       return "night";
     }
 
-    function show(img) {
+    function setCredit(img) {
+      if (credit && img.name) {
+        credit.textContent = "Photo: " + img.name + " / Unsplash";
+        if (img.page) credit.href = img.page;
+        credit.classList.add("shown");
+      }
+    }
+
+    // instant: cache hit — the image is already in the browser cache, so show it
+    // with no fade (no flash of the default image). Otherwise preload then fade in.
+    function show(img, instant) {
+      if (instant) {
+        bg.style.transition = "none";
+        bg.style.backgroundImage = "url('" + img.url + "')";
+        bg.classList.add("loaded");
+        setCredit(img);
+        return;
+      }
       var pre = new Image();
       pre.onload = function () {
         bg.style.backgroundImage = "url('" + img.url + "')";
         bg.classList.add("loaded");
-        if (credit && img.name) {
-          credit.textContent = "Photo: " + img.name + " / Unsplash";
-          if (img.page) credit.href = img.page;
-          credit.classList.add("shown");
-        }
+        setCredit(img);
       };
       pre.src = img.url;
     }
@@ -48,7 +61,7 @@
     var key = new Date().toISOString().slice(0, 13) + "-" + period();
     try {
       var cached = JSON.parse(localStorage.getItem(store) || "null");
-      if (cached && cached.key === key) { show(cached.img); return; }
+      if (cached && cached.key === key) { show(cached.img, true); return; }
     } catch (e) {}
 
     var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);

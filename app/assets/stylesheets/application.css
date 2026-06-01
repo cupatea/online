@@ -665,7 +665,26 @@ body.dashboard .link-item {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 body.dashboard .link-item:first-child { border-top: none; }
+body.dashboard .link-item-main { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+body.dashboard .link-grip { cursor: grab; color: rgba(255, 255, 255, 0.4); flex: none; user-select: none; line-height: 1; }
+body.dashboard .link-grip:active { cursor: grabbing; }
+body.dashboard .link-item.is-disabled .link-grip { cursor: default; }
+body.dashboard .link-item.dragging { opacity: 0.6; }
+body.dashboard .link-item { border-radius: 0.5rem; }
+body.dashboard .link-item .tile-icon { width: 2rem; height: 2rem; border-radius: 0.45rem; font-size: 1.05rem; flex: none; }
+body.dashboard .link-item .tile-monogram { font-size: 0.9rem; }
 body.dashboard .link-item-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.dashboard .link-item.is-disabled .link-item-main { opacity: 0.45; }
+body.dashboard .link-flag {
+  flex: none;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+}
 body.dashboard .link-item-actions { display: flex; align-items: center; gap: 0.5rem; flex: none; }
 
 body.dashboard .danger-zone {

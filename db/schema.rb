@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_130731) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_135548) do
   create_table "links", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
+    t.boolean "enabled", default: true, null: false
     t.string "icon"
     t.integer "position"
     t.integer "profile_id", null: false
