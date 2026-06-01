@@ -16,19 +16,21 @@ class ApplicationController < ActionController::Base
     request.env["puma.socket"]&.to_io&.local_address&.ip_port == port.to_i
   end
 
+  # Controllers that are admin-only — never reachable on the public dashboard
+  # port. The dashboard surface (Dashboard, Profiles, Links) is allowed there.
+  ADMIN_CONTROLLERS = %w[ServicesController SettingsController].freeze
+
   private
 
   def dashboard_mode? = self.class.dashboard_request?(request)
   helper_method :dashboard_mode?
 
-  # The access boundary: on the dashboard port only DashboardController may run;
-  # every admin controller (Services, Settings) bounces to the launcher, so
-  # admin actions never execute there. No-op on the admin port. /up is
-  # unaffected — Rails::HealthController < ActionController::Base, not this.
+  # The access boundary: on the dashboard port the admin controllers bounce to
+  # the launcher, so admin actions never execute there. No-op on the admin port.
+  # /up is unaffected — Rails::HealthController < ActionController::Base, not this.
   def block_admin_in_dashboard_mode
     return unless dashboard_mode?
-    return if instance_of?(DashboardController)
 
-    redirect_to root_path
+    redirect_to root_path if ADMIN_CONTROLLERS.include?(self.class.name)
   end
 end

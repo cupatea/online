@@ -8,9 +8,25 @@ Rails.application.routes.draw do
   get "/", to: "dashboard#index", as: :dashboard,
            constraints: ->(req) { ApplicationController.dashboard_request?(req) }
 
+  # Personal-link profiles (dashboard surface). Fixed paths first; the catch-all
+  # ":slug" routes go last so they don't shadow /new, /setting, /services, etc.
+  get  "new",      to: "profiles#new",    as: :new_profile
+  post "profiles", to: "profiles#create", as: :profiles
+
   resource  :setting, only: [ :show, :update ]
   resources :services, except: [ :show ]
   post "republish" => "services#republish", as: :republish
+
+  get    ":slug/edit",           to: "profiles#edit",   as: :edit_profile
+  patch  ":slug",                to: "profiles#update"
+  delete ":slug",                to: "profiles#destroy"
+  get    ":slug/links",          to: "links#index",     as: :profile_links
+  get    ":slug/links/new",      to: "links#new",       as: :new_profile_link
+  post   ":slug/links",          to: "links#create"
+  get    ":slug/links/:id/edit", to: "links#edit",      as: :edit_profile_link
+  patch  ":slug/links/:id",      to: "links#update",    as: :profile_link
+  delete ":slug/links/:id",      to: "links#destroy"
+  get    ":slug",                to: "profiles#show",   as: :profile
 
   root "services#index"
 end

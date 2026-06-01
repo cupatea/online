@@ -1,0 +1,27 @@
+<% content_for :title, @profile.name %>
+
+<%= render "shared/background", seed: @profile.id %>
+
+<% if @links.any? %>
+  <div class="tiles">
+    <% @links.each_with_index do |link, i| %>
+      <a class="tile" style="--i: <%= i %>"
+         href="<%= link.url %>" target="_blank" rel="noopener noreferrer">
+        <%= link_icon(link) %>
+        <span class="tile-titles">
+          <span class="tile-name"><%= link.title %></span>
+          <% if link.description.present? %>
+            <span class="tile-desc"><%= link.description %></span>
+          <% end %>
+        </span>
+      </a>
+    <% end %>
+  </div>
+<% else %>
+  <div class="empty">
+    <p>No links yet.</p>
+    <p><%= link_to "Add some →", edit_profile_path(@profile) %></p>
+  </div>
+<% end %>
+
+<%= render "shared/dock", current: @profile %>

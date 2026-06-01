@@ -1,0 +1,76 @@
+<% seed = local_assigns.fetch(:seed, 0) %>
+<div id="dash-bg" data-seed="<%= seed %>"></div>
+<a class="dash-credit" id="dash-credit" target="_blank" rel="noopener noreferrer"></a>
+
+<script>
+  // Background photos from Bonjourr's public, keyless image service — the same
+  // curated Unsplash "Daylight" collections Bonjourr uses, swapped by time of
+  // day. Cached for the hour; falls back to the self-hosted default image
+  // (CSS) if unreachable.
+  (function () {
+    var bg = document.getElementById("dash-bg");
+    var credit = document.getElementById("dash-credit");
+    if (!bg) return;
+
+    // Each page passes a seed (0 = NAS dashboard, profile.id for a profile) so
+    // every profile keeps its own distinct, recognizable photo.
+    var seed = parseInt(bg.dataset.seed || "0", 10) || 0;
+
+    function period() {
+      var d = new Date();
+      var mins = d.getHours() * 60 + d.getMinutes();
+      var sunrise = 420, sunset = 1320; // Bonjourr defaults: 07:00 / 22:00
+      if (mins <= sunrise - 60) return "night";
+      if (mins <= sunrise + 60) return "noon";   // sunrise set
+      if (mins <= sunset - 60) return "day";
+      if (mins <= sunset + 60) return "evening"; // sunset set
+      return "night";
+    }
+
+    function show(img) {
+      var pre = new Image();
+      pre.onload = function () {
+        bg.style.backgroundImage = "url('" + img.url + "')";
+        bg.classList.add("loaded");
+        if (credit && img.name) {
+          credit.textContent = "Photo: " + img.name + " / Unsplash";
+          if (img.page) credit.href = img.page;
+          credit.classList.add("shown");
+        }
+      };
+      pre.src = img.url;
+    }
+
+    // Cache per seed so each surface (NAS dashboard, each profile) keeps its own
+    // image and navigating between them doesn't refetch/change it. Refreshed
+    // each hour / daylight period.
+    var store = "dashBg-" + seed;
+    var key = new Date().toISOString().slice(0, 13) + "-" + period();
+    try {
+      var cached = JSON.parse(localStorage.getItem(store) || "null");
+      if (cached && cached.key === key) { show(cached.img); return; }
+    } catch (e) {}
+
+    var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+    var w = Math.min(Math.round(window.screen.width * dpr), 3840);
+    var h = Math.min(Math.round(window.screen.height * dpr), 2160);
+
+    fetch("https://services.bonjourr.fr/backgrounds/bonjourr/images/daylight?w=" + w + "&h=" + h)
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        var list = json["bonjourr-images-daylight-" + period()] || [];
+        if (!list.length) return;
+        // Sort for a stable order, then index by seed → a fixed photo per profile.
+        list.sort(function (a, b) {
+          var ua = (a.urls && a.urls.full) || a.url || "";
+          var ub = (b.urls && b.urls.full) || b.url || "";
+          return ua < ub ? -1 : ua > ub ? 1 : 0;
+        });
+        var p = list[((seed % list.length) + list.length) % list.length];
+        var img = { url: (p.urls && p.urls.full) || p.url, name: p.name || p.username, page: p.page };
+        show(img);
+        try { localStorage.setItem(store, JSON.stringify({ key: key, img: img })); } catch (e) {}
+      })
+      .catch(function () { /* offline / service down → CSS default-bg fallback */ });
+  })();
+</script>

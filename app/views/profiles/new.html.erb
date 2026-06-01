@@ -1,0 +1,28 @@
+<% content_for :title, "New profile" %>
+
+<%= render "shared/background", seed: 0 %>
+
+<div class="panel">
+  <h1>New profile</h1>
+
+  <%= form_with model: @profile, url: profiles_path, class: "stack" do |f| %>
+    <% if @profile.errors.any? %>
+      <div class="errors">
+        <ul>
+          <% @profile.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :name %>
+      <%= f.text_field :name, placeholder: "Vlad", autofocus: true %>
+      <p class="help">Your links will live at <span class="mono">/<%= "<name>" %></span>.</p>
+    </div>
+
+    <div class="actions">
+      <%= f.submit "Create" %>
+      <%= link_to "Cancel", root_path, class: "button link" %>
+    </div>
+  <% end %>
+</div>

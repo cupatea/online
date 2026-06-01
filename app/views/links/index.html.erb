@@ -1,0 +1,32 @@
+<% content_for :title, "Links · #{@profile.name}" %>
+
+<%= render "shared/background", seed: @profile.id %>
+
+<div class="panel">
+  <div class="panel-head">
+    <h1><%= @profile.name %> · Links</h1>
+    <%= link_to "Done", profile_path(@profile), class: "button secondary" %>
+  </div>
+
+  <div class="panel-head panel-sub-head">
+    <h2 class="panel-sub">Links</h2>
+    <%= link_to "+ Add link", new_profile_link_path(@profile), class: "button" %>
+  </div>
+
+  <% if @links.any? %>
+    <ul class="link-list">
+      <% @links.each do |link| %>
+        <li class="link-item">
+          <span class="link-item-title"><%= link.title %></span>
+          <span class="link-item-actions">
+            <%= link_to "Edit", edit_profile_link_path(@profile, link), class: "button link" %>
+            <%= button_to "Delete", profile_link_path(@profile, link), method: :delete,
+                          onclick: "return confirm('Delete #{j link.title}?')", class: "button danger" %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="help">No links yet. Add your first one above.</p>
+  <% end %>
+</div>

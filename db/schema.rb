@@ -10,7 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_115544) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_130731) do
+  create_table "links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.string "icon"
+    t.integer "position"
+    t.integer "profile_id", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["profile_id"], name: "index_links_on_profile_id"
+  end
+
+  create_table "profiles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_profiles_on_slug", unique: true
+  end
+
   create_table "services", force: :cascade do |t|
     t.string "category", default: "general", null: false
     t.datetime "created_at", null: false
@@ -33,4 +53,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_115544) do
     t.datetime "updated_at", null: false
     t.text "upstream_hosts", default: "", null: false
   end
+
+  add_foreign_key "links", "profiles"
 end

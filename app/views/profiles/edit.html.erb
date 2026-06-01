@@ -1,0 +1,27 @@
+<% content_for :title, "Edit #{@profile.name}" %>
+
+<%= render "shared/background", seed: @profile.id %>
+
+<div class="panel">
+  <div class="panel-head">
+    <h1><%= @profile.name %></h1>
+    <%= link_to "Done", profile_path(@profile), class: "button secondary" %>
+  </div>
+
+  <% if @profile.errors.any? %>
+    <div class="errors">
+      <ul><% @profile.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @profile, url: profile_path(@profile), method: :patch, class: "rename" do |f| %>
+    <%= f.text_field :name %>
+    <%= f.submit "Rename" %>
+  <% end %>
+
+  <div class="danger-zone">
+    <%= button_to "Delete profile", profile_path(@profile), method: :delete,
+                  onclick: "return confirm('Delete #{j @profile.name} and all its links? This cannot be undone.')",
+                  class: "button danger" %>
+  </div>
+</div>

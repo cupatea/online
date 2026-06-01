@@ -554,13 +554,13 @@ body.dashboard .empty {
   padding: 3rem;
 }
 
-/* Photo credit (Unsplash attribution), bottom corner. */
+/* Photo credit (Unsplash attribution), bottom-left (the dock owns bottom-right). */
 .dash-credit {
   position: fixed;
-  right: 0.9rem;
+  left: 0.9rem;
   bottom: 0.7rem;
   z-index: 1;
-  max-width: 60vw;
+  max-width: 45vw;
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
@@ -574,6 +574,105 @@ body.dashboard .empty {
 
 .dash-credit.shown { opacity: 1; }
 .dash-credit:hover { color: #fff; }
+
+/* Bottom-right navigation dock: NAS-dashboard button, a circle per profile, +new. */
+body.dashboard .dock {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+body.dashboard .dock-item {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+body.dashboard .dock-item:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.22); }
+body.dashboard .dock-home svg { display: block; }
+
+/* Management panel (new / edit profile, link forms) over the dashboard photo. */
+body.dashboard .panel {
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 1.75rem;
+  border-radius: 1rem;
+  background: rgba(16, 18, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.85);
+}
+
+body.dashboard .panel h1 { font-size: 1.4rem; font-weight: 600; margin: 0 0 1.25rem; }
+body.dashboard .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+body.dashboard .panel-head h1 { margin: 0; }
+
+body.dashboard .panel-sub {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 1.75rem 0 0.85rem;
+}
+
+body.dashboard .panel label { color: rgba(255, 255, 255, 0.85); }
+body.dashboard .panel .help { color: rgba(255, 255, 255, 0.55); }
+
+body.dashboard .panel input[type="text"],
+body.dashboard .panel input[type="email"],
+body.dashboard .panel input[type="number"] {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+body.dashboard .panel input::placeholder { color: rgba(255, 255, 255, 0.4); }
+body.dashboard .panel .button.link { color: rgba(255, 255, 255, 0.7); }
+body.dashboard .panel .button.link:hover { color: #fff; }
+
+body.dashboard .panel .rename { display: flex; gap: 0.5rem; align-items: center; }
+body.dashboard .panel .rename input[type="text"] { flex: 1; }
+
+body.dashboard .panel-sub-head { margin-top: 1.75rem; }
+body.dashboard .panel-sub-head .panel-sub { margin: 0; }
+
+body.dashboard .link-list { list-style: none; margin: 0.25rem 0 0; padding: 0; }
+body.dashboard .link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.dashboard .link-item:first-child { border-top: none; }
+body.dashboard .link-item-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.dashboard .link-item-actions { display: flex; align-items: center; gap: 0.5rem; flex: none; }
+
+body.dashboard .danger-zone {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
 
 @keyframes tile-in {
   from { opacity: 0; transform: translateY(12px); }

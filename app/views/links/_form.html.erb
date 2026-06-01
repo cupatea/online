@@ -1,0 +1,37 @@
+<%= form_with model: link, url: url, method: method, class: "stack" do |f| %>
+  <% if link.errors.any? %>
+    <div class="errors">
+      <p><%= pluralize(link.errors.count, "error") %> prevented saving:</p>
+      <ul>
+        <% link.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :title %>
+    <%= f.text_field :title, placeholder: "Hacker News", autofocus: true %>
+  </div>
+
+  <div>
+    <%= f.label :url %>
+    <%= f.text_field :url, placeholder: "news.ycombinator.com", class: "mono" %>
+    <p class="help">Where the tile links to. <span class="mono">https://</span> is added if you omit it.</p>
+  </div>
+
+  <div>
+    <%= f.label :icon %>
+    <%= f.text_field :icon, placeholder: "🔗 or image URL" %>
+    <p class="help">Emoji or image URL. Leave blank to use the site's favicon.</p>
+  </div>
+
+  <div>
+    <%= f.label :description %>
+    <%= f.text_field :description, placeholder: "optional subtitle" %>
+  </div>
+
+  <div class="actions">
+    <%= f.submit submit %>
+    <%= link_to "Cancel", profile_links_path(profile), class: "button link" %>
+  </div>
+<% end %>
