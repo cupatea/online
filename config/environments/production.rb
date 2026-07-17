@@ -21,6 +21,13 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
+  # A console started with `docker exec` does not inherit variables exported by
+  # the entrypoint. Read the same persisted key file so every Rails process uses
+  # the server's stable secret.
+  config.secret_key_base = ENV["SECRET_KEY_BASE"].presence || begin
+    File.read("/rails/storage/.secret_key_base").strip
+  end
+
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
 
