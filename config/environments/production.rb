@@ -24,8 +24,11 @@ Rails.application.configure do
   # A console started with `docker exec` does not inherit variables exported by
   # the entrypoint. Read the same persisted key file so every Rails process uses
   # the server's stable secret.
-  config.secret_key_base = ENV["SECRET_KEY_BASE"].presence || begin
-    File.read("/rails/storage/.secret_key_base").strip
+  if ENV["SECRET_KEY_BASE"].blank?
+    secret_file = "/rails/storage/.secret_key_base"
+    if File.exist?(secret_file) && (persisted = File.read(secret_file).strip).present?
+      config.secret_key_base = persisted
+    end
   end
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
