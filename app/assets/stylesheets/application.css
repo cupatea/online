@@ -88,6 +88,7 @@ header > div {
 
 nav {
   display: flex;
+  align-items: center;
   gap: 1rem;
   font-size: 0.875rem;
 }
@@ -98,6 +99,35 @@ nav a {
 }
 
 nav a:hover { color: var(--fg); }
+
+header nav .nav-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+header nav form.button_to {
+  display: flex;
+  align-items: center;
+  height: 1.25rem;
+  margin: 0;
+}
+
+header nav .nav-item:hover { color: var(--fg); background: transparent; }
 
 main {
   max-width: 48rem;

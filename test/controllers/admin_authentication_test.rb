@@ -1,5 +1,9 @@
 require "test_helper"
 class AdminAuthenticationTest < ActionDispatch::IntegrationTest
+  setup do
+    Setting.instance.change_admin_password!(ADMIN_PASSWORD)
+  end
+
   test "dashboard is public" do
     local_address = Struct.new(:ip_port).new(30_004)
     socket = Object.new
@@ -55,6 +59,34 @@ class AdminAuthenticationTest < ActionDispatch::IntegrationTest
 
     get setting_path
     assert_response :success
+  end
+
+  test "first login creates the admin password and signs in" do
+    Setting.instance.update_column(:admin_password_digest, nil)
+
+    get admin_login_path
+    assert_response :success
+    assert_select "h1", "Create admin password"
+
+    post admin_login_path, params: {
+      password: ADMIN_PASSWORD,
+      password_confirmation: ADMIN_PASSWORD
+    }
+
+    assert_response :redirect
+    assert Setting.instance.reload.authenticate_admin_password(ADMIN_PASSWORD)
+  end
+
+  test "first login requires matching confirmation" do
+    Setting.instance.update_column(:admin_password_digest, nil)
+
+    post admin_login_path, params: {
+      password: ADMIN_PASSWORD,
+      password_confirmation: "different password"
+    }
+
+    assert_response :unprocessable_entity
+    assert_not Setting.instance.reload.admin_password_configured?
   end
 
   test "invalid login is rejected" do

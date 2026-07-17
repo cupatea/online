@@ -78,7 +78,6 @@ volume and host networking. Pick whichever you like.
 docker run -d \
   --name online \
   --restart unless-stopped \
-  --env ADMIN_PASSWORD_DIGEST='$2a$12$replace-with-your-bcrypt-digest' \
   -p 80:80 -p 443:443 -p 3003:3003 \
   -v online_data:/rails/storage \
   ghcr.io/cupatea/online:latest
@@ -94,8 +93,6 @@ services:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
-    environment:
-      ADMIN_PASSWORD_DIGEST: "${ADMIN_PASSWORD_DIGEST:?Set ADMIN_PASSWORD_DIGEST}"
     ports:
       - "80:80"
       - "443:443"
@@ -120,25 +117,32 @@ Then `docker compose up -d`.
 
 The dashboard and profile launchers are public, but the admin pages and every
 `POST`, `PATCH`/`PUT`, and `DELETE` endpoint require a short-lived admin
-session. Generate a bcrypt digest without placing the password in this repo:
+session. On the first visit to `/admin/login`, enter and confirm an admin
+password. Rails stores only its bcrypt digest in the SQLite database.
+
+#### Forgotten password
+
+You do not need the old password to recover access. Open a Rails console in
+the running container:
 
 ```bash
-docker run --rm --entrypoint ruby ghcr.io/cupatea/online:latest \
-  -rbcrypt -e 'puts BCrypt::Password.create(ARGV.fetch(0))' 'choose-a-password'
+docker compose exec app bundle exec rails console
 ```
 
-Export the result before starting Compose:
+If you are not using Compose, run:
 
 ```bash
-export ADMIN_PASSWORD_DIGEST='$2a$12$...'
-docker compose up -d
+docker exec -it online bundle exec rails console
 ```
 
-For Docker secrets, mount a file containing either the digest or the initial
-plain-text password and set `ADMIN_PASSWORD_DIGEST_FILE` or
-`ADMIN_PASSWORD_FILE`. A plain `ADMIN_PASSWORD` environment variable is also
-accepted for first-run convenience and is converted to an in-memory bcrypt
-digest at boot; the digest/file variants are preferred.
+Set a new password through the model (minimum 12 characters):
+
+```ruby
+Setting.instance.change_admin_password!("your new password")
+```
+
+Only the new bcrypt digest is persisted. Type `exit` to close the console;
+the new password works immediately without restarting the container.
 
 ### NAS web UIs (Synology, UGOS, Portainer, etc.)
 
@@ -146,7 +150,6 @@ The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003 3004`,
 so most NAS container UIs auto-detect them. In those UIs:
 
 - Pull `ghcr.io/cupatea/online:latest`
-- Set `ADMIN_PASSWORD_DIGEST` (or one of the `_FILE` variants above)
 - Map ports: `80 → 80`, `443 → 443`, `3003 → 3003`
 - Mount a named volume to `/rails/storage`
 - Start

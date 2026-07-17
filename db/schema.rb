@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_145341) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_17_150000) do
   create_table "categories", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -60,6 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_145341) do
 
   create_table "settings", force: :cascade do |t|
     t.string "acme_email", default: "", null: false
+    t.string "admin_password_digest"
     t.text "base_domains", default: "", null: false
     t.string "cloudflare_token", default: "", null: false
     t.datetime "created_at", null: false

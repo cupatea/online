@@ -5,7 +5,8 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     @setting = Setting.instance
     @setting.update!(
       acme_email: "admin@example.com",
-      cloudflare_token: "old-token"
+      cloudflare_token: "old-token",
+      admin_password: ADMIN_PASSWORD
     )
     sign_in_as_admin
   end

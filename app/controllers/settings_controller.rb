@@ -36,6 +36,6 @@ class SettingsController < ApplicationController
     submitted_token = setting_params[:cloudflare_token].to_s
     return true if ActiveSupport::SecurityUtils.secure_compare(submitted_token, @setting.cloudflare_token.to_s)
 
-    AdminPassword.matches?(params.dig(:setting, :current_password))
+    @setting.authenticate_admin_password(params.dig(:setting, :current_password))
   end
 end

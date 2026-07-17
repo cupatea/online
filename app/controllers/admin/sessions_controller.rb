@@ -7,19 +7,16 @@ module Admin
 
     def new
       redirect_to root_path if admin_authenticated?
+      @setting = Setting.instance
     end
 
     def create
-      return render :new, status: :service_unavailable unless AdminPassword.configured?
+      @setting = Setting.instance
 
-      if AdminPassword.matches?(params[:password])
-        return_to = session[:admin_return_to]
-        reset_session
-        session[:admin_authenticated_at] = Time.current.to_i
-        redirect_to safe_return_to(return_to), notice: "Signed in."
+      if @setting.admin_password_configured?
+        authenticate
       else
-        flash.now[:alert] = "Incorrect password."
-        render :new, status: :unprocessable_entity
+        create_password
       end
     end
 
@@ -29,6 +26,35 @@ module Admin
     end
 
     private
+
+    def authenticate
+      if @setting.authenticate_admin_password(params[:password])
+        start_session("Signed in.")
+      else
+        flash.now[:alert] = "Incorrect password."
+        render :new, status: :unprocessable_entity
+      end
+    end
+
+    def create_password
+      @setting.admin_password = params[:password]
+
+      if params[:password] != params[:password_confirmation]
+        @setting.errors.add(:admin_password_confirmation, "doesn't match password")
+        render :new, status: :unprocessable_entity
+      elsif @setting.save
+        start_session("Admin password created.")
+      else
+        render :new, status: :unprocessable_entity
+      end
+    end
+
+    def start_session(notice)
+      return_to = session[:admin_return_to]
+      reset_session
+      session[:admin_authenticated_at] = Time.current.to_i
+      redirect_to safe_return_to(return_to), notice: notice
+    end
 
     def safe_return_to(path)
       path.to_s.start_with?("/") && !path.to_s.start_with?("//") ? path : root_path
