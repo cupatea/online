@@ -22,6 +22,9 @@
           <nav>
             <%= link_to "Services", root_path %>
             <%= link_to "Settings", setting_path %>
+            <% if admin_authenticated? %>
+              <%= button_to "Sign out", admin_logout_path, method: :delete, class: "button link" %>
+            <% end %>
           </nav>
         </div>
       </header>

@@ -3,6 +3,10 @@ services:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
+    environment:
+      # Generate with: bin/rails runner 'puts BCrypt::Password.create("your password")'
+      # Prefer ADMIN_PASSWORD_DIGEST_FILE with a Docker secret in production.
+      ADMIN_PASSWORD_DIGEST: "${ADMIN_PASSWORD_DIGEST:?Set ADMIN_PASSWORD_DIGEST}"
     # Explicit port mappings instead of network_mode: host so the same compose
     # file works on Docker Desktop (macOS/Windows) where host networking lives
     # in a hidden Linux VM and isn't reachable from the host OS.

@@ -78,6 +78,7 @@ volume and host networking. Pick whichever you like.
 docker run -d \
   --name online \
   --restart unless-stopped \
+  --env ADMIN_PASSWORD_DIGEST='$2a$12$replace-with-your-bcrypt-digest' \
   -p 80:80 -p 443:443 -p 3003:3003 \
   -v online_data:/rails/storage \
   ghcr.io/cupatea/online:latest
@@ -93,6 +94,8 @@ services:
     image: ghcr.io/cupatea/online:latest
     container_name: online
     restart: unless-stopped
+    environment:
+      ADMIN_PASSWORD_DIGEST: "${ADMIN_PASSWORD_DIGEST:?Set ADMIN_PASSWORD_DIGEST}"
     ports:
       - "80:80"
       - "443:443"
@@ -113,12 +116,37 @@ Or fetch it: `curl -O https://raw.githubusercontent.com/cupatea/online/main/dock
 
 Then `docker compose up -d`.
 
+### Admin password
+
+The dashboard and profile launchers are public, but the admin pages and every
+`POST`, `PATCH`/`PUT`, and `DELETE` endpoint require a short-lived admin
+session. Generate a bcrypt digest without placing the password in this repo:
+
+```bash
+docker run --rm --entrypoint ruby ghcr.io/cupatea/online:latest \
+  -rbcrypt -e 'puts BCrypt::Password.create(ARGV.fetch(0))' 'choose-a-password'
+```
+
+Export the result before starting Compose:
+
+```bash
+export ADMIN_PASSWORD_DIGEST='$2a$12$...'
+docker compose up -d
+```
+
+For Docker secrets, mount a file containing either the digest or the initial
+plain-text password and set `ADMIN_PASSWORD_DIGEST_FILE` or
+`ADMIN_PASSWORD_FILE`. A plain `ADMIN_PASSWORD` environment variable is also
+accepted for first-run convenience and is converted to an in-memory bcrypt
+digest at boot; the digest/file variants are preferred.
+
 ### NAS web UIs (Synology, UGOS, Portainer, etc.)
 
 The image declares `VOLUME ["/rails/storage"]` and `EXPOSE 80 443 3003 3004`,
 so most NAS container UIs auto-detect them. In those UIs:
 
 - Pull `ghcr.io/cupatea/online:latest`
+- Set `ADMIN_PASSWORD_DIGEST` (or one of the `_FILE` variants above)
 - Map ports: `80 → 80`, `443 → 443`, `3003 → 3003`
 - Mount a named volume to `/rails/storage`
 - Start
@@ -138,13 +166,14 @@ http://<host>:3003
 Where `<host>` is whatever resolves to your machine — `nas.<tailnet>.ts.net`
 on Tailscale, the host's LAN IP, etc.
 
-1. **Settings** → enter your ACME email and Cloudflare API token → Save.
-2. **+ Add service** → display name, hostname (e.g. `caramba.example.com`),
+1. Open `/admin/login` and sign in with the admin password.
+2. **Settings** → enter your ACME email and Cloudflare API token → Save.
+3. **+ Add service** → display name, hostname (e.g. `caramba.example.com`),
    upstream host, upstream port → Save.
    - On Docker Desktop (macOS/Windows): use `host.docker.internal` to reach
      services running on the host machine.
    - On Linux host with `network_mode: host`: use `localhost`.
-3. The admin pushes the new Caddyfile to Caddy in-process. The first request
+4. The admin pushes the new Caddyfile to Caddy in-process. The first request
    to the new hostname triggers cert issuance (DNS-01 takes ~30 seconds
    end-to-end).
 

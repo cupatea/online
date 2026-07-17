@@ -1,4 +1,6 @@
 class DashboardController < ApplicationController
+  allow_unauthenticated_access only: :index
+
   SECTIONS = { "general" => "General", "technical" => "Technical" }.freeze
 
   def index

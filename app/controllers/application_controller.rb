@@ -1,6 +1,8 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
+  include AdminAuthentication
+
   before_action :block_admin_in_dashboard_mode
 
   # True when the request arrived on DASHBOARD_PORT. We read the LOCAL accepted-
@@ -17,8 +19,8 @@ class ApplicationController < ActionController::Base
   end
 
   # Controllers that are admin-only — never reachable on the public dashboard
-  # port. The dashboard surface (Dashboard, Profiles, Links) is allowed there.
-  ADMIN_CONTROLLERS = %w[ServicesController SettingsController].freeze
+  # port. Authentication is still enforced independently on every endpoint.
+  ADMIN_CONTROLLERS = %w[CategoriesController LinksController ServicesController SettingsController].freeze
 
   private
 

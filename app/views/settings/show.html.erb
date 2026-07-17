@@ -21,11 +21,16 @@
 
   <div>
     <%= f.label :cloudflare_token, "Cloudflare API token" %>
-    <%= f.text_field :cloudflare_token, class: "mono" %>
+    <%= f.password_field :cloudflare_token, value: @setting.cloudflare_token, class: "mono", autocomplete: "off" %>
     <p class="help">
       Permissions: <span class="mono">Zone → DNS → Edit</span>, scoped to your zone.
       Create one at <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">dash.cloudflare.com</a>.
     </p>
+  </div>
+
+  <div>
+    <%= f.label :current_password, "Admin password (required to change the token)" %>
+    <%= f.password_field :current_password, autocomplete: "current-password" %>
   </div>
 
   <fieldset class="presets">
