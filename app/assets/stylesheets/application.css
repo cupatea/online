@@ -283,6 +283,7 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="number"],
+input[type="password"],
 textarea,
 select {
   width: 100%;
@@ -301,6 +302,7 @@ select { appearance: none; -webkit-appearance: none; cursor: pointer; }
 input[type="text"].mono,
 input[type="email"].mono,
 input[type="number"].mono,
+input[type="password"].mono,
 textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 input:focus, textarea:focus, select:focus {
@@ -367,6 +369,134 @@ input:focus, textarea:focus, select:focus {
 }
 
 .note p { margin: 0; }
+
+/* Admin authentication */
+body.auth-page {
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--card) 80%, transparent), transparent 34rem),
+    var(--bg);
+}
+
+body.auth-page header > div {
+  max-width: 70rem;
+  min-height: 4rem;
+}
+
+body.auth-page .brand {
+  font-size: 1rem;
+  letter-spacing: -0.025em;
+}
+
+body.auth-page main {
+  width: 100%;
+  max-width: 30rem;
+  min-height: calc(100vh - 4rem);
+  padding: clamp(3rem, 10vh, 7rem) 1rem 3rem;
+}
+
+body.auth-page main > .flash {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 6%);
+}
+
+.auth-card {
+  padding: clamp(1.5rem, 5vw, 2.25rem);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 10%);
+}
+
+.auth-mark {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1.5rem;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 0.8rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+}
+
+.auth-mark svg { width: 1.4rem; height: 1.4rem; }
+
+.auth-heading { margin-bottom: 1.75rem; }
+
+.auth-heading h1 {
+  margin-bottom: 0.4rem;
+  font-size: 1.6rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.auth-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.auth-card .flash {
+  margin-bottom: 1.25rem;
+  border-radius: 0.65rem;
+  padding: 0.75rem;
+}
+
+.auth-field label {
+  margin-bottom: 0.45rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+
+.password-input { position: relative; }
+
+.password-input svg {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.password-input input {
+  height: 2.9rem;
+  padding-left: 2.65rem;
+  border-radius: 0.65rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.password-input input::placeholder { color: color-mix(in srgb, var(--muted) 75%, transparent); }
+
+.password-input:focus-within svg { color: var(--fg); }
+
+.auth-actions { margin-top: 1.25rem !important; }
+
+.auth-actions input[type="submit"] {
+  width: 100%;
+  min-height: 2.9rem;
+  border-radius: 0.65rem;
+  font-weight: 600;
+  transition: background 120ms ease, transform 120ms ease, opacity 120ms ease;
+}
+
+.auth-actions input[type="submit"]:hover { transform: translateY(-1px); }
+.auth-actions input[type="submit"]:active { transform: translateY(0); }
+
+.auth-actions input[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+@media (max-width: 32rem) {
+  body.auth-page main { padding-top: 2rem; }
+  .auth-card { border-radius: 0.85rem; }
+}
 
 /* ============================================================
    Dashboard — Bonjourr-style launcher. Scoped to body.dashboard

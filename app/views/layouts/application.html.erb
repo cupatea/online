@@ -14,18 +14,18 @@
     <%= stylesheet_link_tag :app %>
   </head>
 
-  <body class="<%= "dashboard" if dashboard_mode? %>">
+  <body class="<%= [dashboard_mode? ? "dashboard" : nil, content_for(:body_class)].compact.join(" ") %>">
     <% unless dashboard_mode? %>
       <header>
         <div>
           <%= link_to "Caddy admin", root_path, class: "brand" %>
-          <nav>
-            <%= link_to "Services", root_path %>
-            <%= link_to "Settings", setting_path %>
-            <% if admin_authenticated? %>
+          <% if admin_authenticated? %>
+            <nav>
+              <%= link_to "Services", root_path %>
+              <%= link_to "Settings", setting_path %>
               <%= button_to "Sign out", admin_logout_path, method: :delete, class: "button link" %>
-            <% end %>
-          </nav>
+            </nav>
+          <% end %>
         </div>
       </header>
     <% end %>
